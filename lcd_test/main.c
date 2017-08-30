@@ -40,12 +40,3 @@ void init()
 	command(0x0C); // display ON and cursor ON
 	command(0x06); // Entry mode set
 }
-
-void clear_display(char c)
-{
-	DDRD |= 0xFC; // set PD2-7 to outputs
-	DDRA |= 0xD8; // set PA3, 5-7 to outputs
-
-	PORTD &= ~(0xFC); // set DB2-7 to 0
-	PORTD &= ~(0xC8); // set RS, R/W, and DB1 to 0
-}
