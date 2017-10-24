@@ -2,6 +2,7 @@
  * asdfasdf
  * 
  */
+#include "defines.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -10,11 +11,6 @@
 
 /* UART baud rate */
 #define UART_BAUD 9600
-#define F_CPU 1000000
-
-/* apparently, this define is missing from avr lib */
-#define UDRE 5
-
 
 /*
  * Initialize the UART to 9600 Bd, tx/rx, 8 bit, 1 stop.
@@ -32,7 +28,7 @@ void uart_init(void)
 int uart_putchar(unsigned char c)
 {  
 	/* Wait for empty transmit buffer */
-	while (!(UCSR0A & (1<<UDRE)));
+	while (!(UCSR0A & (1<<UDRE0)));
 
 	/* put char in tx buffer */
 	UDR0 = c;

@@ -1,5 +1,5 @@
 TARGET=main
-OBJS=main.o uart.o
+OBJS=main.o uart.o i2c.o
 
 CC=avr-gcc
 
