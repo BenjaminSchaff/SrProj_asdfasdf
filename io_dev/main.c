@@ -17,6 +17,22 @@ void init()
 	uart_init();
 }
 
+
+void i2c_write_test()
+{
+	i2c_start();
+	
+//	i2c_write_byte((TEMP_SENSE_ADDR<<1) | 0x00);
+	i2c_write_byte((PRES_SENSE_ADDR<<1) | 0x00);
+	i2c_write_byte(0xFF);
+	i2c_stop();
+/*	
+	if (val != 0)
+		fprintf(&uart_strm, "n%x", val);
+	else 
+		fprintf(&uart_strm, "y\1");*/
+}
+
 int main() 
 {
 	init();
@@ -27,6 +43,9 @@ int main()
 		_delay_ms(100);
 		PORTA &= ~(1<<4);
 		_delay_ms(100);
+
+		i2c_write_test();
+
 		fprintf(&uart_strm, "test\n");
 	}
 }
