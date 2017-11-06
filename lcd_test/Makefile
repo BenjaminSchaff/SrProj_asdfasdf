@@ -1,4 +1,5 @@
 TARGET=main
+OBJS=main.o lcd.o
 
 CC=avr-gcc
 
@@ -17,8 +18,9 @@ clean:
 %.hex: %.elf
 	avr-objcopy -R .eeprom -O ihex $< $@
 
-$(TARGET).elf: $(TARGET).o
+$(TARGET).elf: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 flash: $(TARGET).hex
 	avrdude -c stk500v2 -P "$(PORT)" -p $(MCU) -U flash:w:$<:i
+
