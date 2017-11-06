@@ -13,10 +13,12 @@
 
 void i2c_init(void)
 {
+	
+	TWSR = 0x00; // set prescaler to 4;
 	/*	SCL frequency = CPU Clock frequency / (16+2(TWBR) * PrescalerValue) */
 	/*  "the CPU clock frequency in the Slave must be at least 16 times higher than the SCL frequency" (23.5.2) */
 	TWBR = (uint8_t)(F_CPU / I2C_BUS_RATE - 16) / 2;
-	// TODO: clock speed seems to be really low
+	// TODO: clock speed seems to be off, as if TWBR is still zero
 }
 
 
@@ -48,9 +50,14 @@ int i2c_write_byte(uint8_t data)
 	return 0;
 }
 
-uint8_t i2c_read_byte(int n)
+uint8_t i2c_read_byte(uint8_t ack)
 {
-	return 0;
+	TWCR = (1<<TWINT) | (1<<TWEN) | (ack<<TWEA);	// beging read
+
+	while ( !(TWCR & (1<<TWINT)) );	// wait for read to complete
+	//TODO error checking, I guess
+
+	return TWDR;
 }
 
 void i2c_stop(void)
