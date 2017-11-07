@@ -3,7 +3,7 @@
 #include <util/delay.h>
 
 struct bits {
-  uint8_t b0:1, b1:1, b2:1, b3:1, b4:1, b5:1, b6:1, b7:1;
+  uint8_t b0, b1, b2, b3, b4, b5, b6, b7;
 } __attribute__((__packed__));
 #define SBIT_(port,pin) ((*(volatile struct bits*)&port).b##pin)
 #define SBIT(x,y)       SBIT_(x,y)
