@@ -1,9 +1,9 @@
+#include "defines.h"
 #include <stdio.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
 
-#include "defines.h"
 #include "hd44780_settings.h"
 #include "hd44780.h"
 
