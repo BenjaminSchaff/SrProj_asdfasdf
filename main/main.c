@@ -156,7 +156,10 @@ long bmp180_calc_true_pres(long u_pres)
 void sensor_init()
 {
 	bmp180_read_calib();
-
+	TCCR1A = 0x00; // don't need any of these
+	TCCR1B = 0x42; // turns off noise cancellation, turns on rising edge detection, positve edge, prescalar = 8
+	TIMSK1 |= (1 << ICIE1);
+	TIMSK1 |= (1 << TOIE1);
 }
 
 
@@ -190,6 +193,18 @@ void read_sensors()
 	bmp180_read_u_pres();
 }
 
+void print_sensors()
+{
+	lcd_clrscr();
+	lcd_home();
+
+	sprintf(buf, "%d", bmp180_T); // convert bmp180 temp to a string
+	lcd_puts(buf); // print temperature to first line of screen
+	lcd_goto(0x04); // goto next line
+
+	sprintf(buf, "%d", bmp180_P); // convert bmp180 pressure to a string
+}
+
 
 
 void init()
@@ -205,7 +220,6 @@ void init()
 int main() 
 {
 	init();
-	
 
 	while (1) {
 		PORTA |= (1<<4);
@@ -219,15 +233,7 @@ int main()
 		bmp180_T = bmp180_calc_true_temp(UT);
 		bmp180_P = bmp180_calc_true_pres(UP);
 		
-		lcd_clrscr();
-		lcd_home();
-
-		sprintf(buf, "%d", bmp180_T); // convert bmp180 temp to a string
-		lcd_puts(buf); // print temperature to first line of screen
-		lcd_goto(0x04); // goto next line
-
-		sprintf(buf, "%d", bmp180_P); // convert bmp180 pressure to a string
-		lcd_puts(buf); // print pressure to second line of lcd
+		print_sensors();
 		_delay_ms(300);
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
