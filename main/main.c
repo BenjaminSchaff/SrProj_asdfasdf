@@ -16,7 +16,7 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
-uint16_t t_offset = 2.5;
+uint16_t t_offset = -25;
 
 /* BMP180 variables */
 
@@ -177,7 +177,7 @@ void read_sensors()
 	humid |= i2c_read_byte(0);	// humid LSB
 	i2c_stop();
 
-	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset * 10;
+	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 
 	// trigger measurement
