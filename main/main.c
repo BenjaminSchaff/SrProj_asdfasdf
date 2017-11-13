@@ -16,6 +16,7 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
+uint16_t t_offset = 2.5;
 
 /* BMP180 variables */
 
@@ -176,7 +177,7 @@ void read_sensors()
 	humid |= i2c_read_byte(0);	// humid LSB
 	i2c_stop();
 
-	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400;
+	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset * 10;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 
 	// trigger measurement
@@ -198,7 +199,7 @@ void print_sensors()
 	lcd_clrscr();
 	lcd_home();
 
-	sprintf(buf, "Temp: %ld.%ld C %d", bmp180_T/10, bmp180_T%10, c_temp); // convert bmp180 temp to a string
+	sprintf(buf, "Temp: %d.%d C", c_temp/10, c_temp%10); // convert temp to a string
 	lcd_puts(buf); // print temperature to first line of screen
 	lcd_goto(0x40); // goto next line
 	sprintf(buf, "Pres: %ld.%ld hPa", bmp180_P/100, bmp180_P%100); // convert bmp180 pressure to a string
