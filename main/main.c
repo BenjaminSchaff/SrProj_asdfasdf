@@ -8,6 +8,8 @@
 
 #include "uart.h"
 #include "i2c.h"
+#include "hd44780_settings.h"
+#include "hd44780.h"
 
 FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
