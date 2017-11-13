@@ -1,6 +1,7 @@
 #include "defines.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <avr/io.h>
 #include <util/delay.h>
 #include <util/twi.h>
@@ -29,6 +30,7 @@ long UT; // uncalibrated temp
 long UP;	// ubcalibrated pressure
 long bmp180_T;
 long bmp180_P;
+char buf[20];
 /* * */
 
 void i2c_write_test()
@@ -217,11 +219,21 @@ int main()
 		bmp180_T = bmp180_calc_true_temp(UT);
 		bmp180_P = bmp180_calc_true_pres(UP);
 		
+		lcd_clrscr();
+		lcd_home();
+
+		sprintf(buf, "%d", bmp180_T); // convert bmp180 temp to a string
+		lcd_puts(buf); // print temperature to first line of screen
+		lcd_goto(0x04); // goto next line
+
+		sprintf(buf, "%d", bmp180_P); // convert bmp180 pressure to a string
+		lcd_puts(buf); // print pressure to second line of lcd
+		_delay_ms(300);
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
-		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
+//		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
 	//	fprintf(&uart_strm, "H: %d.%d%%\n", c_humid/10, c_humid%10);
 //		fprintf(&uart_strm, "T2: %ld\n", bmp180_T);
-		fprintf(&uart_strm, "P: %ld\n", bmp180_P);	
+//		fprintf(&uart_strm, "P: %ld\n", bmp180_P);	
 	}
 }
