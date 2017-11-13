@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include <util/twi.h>
 #include <stdint.h>
@@ -17,6 +18,9 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
 uint16_t t_offset = -25;
+
+volatile uint32_t aaaaa = 0;
+volatile uint32_t bbbbb = 0;
 
 /* BMP180 variables */
 
@@ -157,10 +161,11 @@ long bmp180_calc_true_pres(long u_pres)
 void sensor_init()
 {
 	bmp180_read_calib();
+	SREG |= 0x80; // enable global interrupt bit
 	TCCR1A = 0x00; // don't need any of these
 	TCCR1B = 0x42; // turns off noise cancellation, turns on rising edge detection, positve edge, prescalar = 8
-	TIMSK1 |= (1 << ICIE1);
-	TIMSK1 |= (1 << TOIE1);
+	TIMSK1 |= (1 << ICIE1); // input capture interrupt enable
+	TIMSK1 |= (1 << TOIE1); // overflow interrupt enable
 }
 
 
@@ -201,9 +206,18 @@ void print_sensors()
 
 	sprintf(buf, "Temp: %d.%d C", c_temp/10, c_temp%10); // convert temp to a string
 	lcd_puts(buf); // print temperature to first line of screen
+
 	lcd_goto(0x40); // goto next line
 	sprintf(buf, "Pres: %ld.%ld hPa", bmp180_P/100, bmp180_P%100); // convert bmp180 pressure to a string
 	lcd_puts(buf); // print pressure to second line of lcd
+
+	lcd_goto(0x14);
+	sprintf(buf, "Overflow: %ld", bbbbb);
+	lcd_puts(buf);
+
+	lcd_goto(0x54);
+	sprintf(buf, "Input Cap: %ld", aaaaa);
+	lcd_puts(buf);
 }
 
 
@@ -217,6 +231,17 @@ void init()
 	sensor_init();
 }
 
+// input capture
+ISR(TIMER1_CAPT_vect)
+{
+	aaaaa++;
+}
+
+// overflow
+ISR(TIMER1_OVF_vect)
+{
+	bbbbb++;
+}
 
 int main() 
 {
