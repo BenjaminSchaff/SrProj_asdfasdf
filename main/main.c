@@ -198,11 +198,11 @@ void print_sensors()
 	lcd_clrscr();
 	lcd_home();
 
-	sprintf(buf, "%d", bmp180_T); // convert bmp180 temp to a string
+	sprintf(buf, "Temp: %ld.%ld C %d", bmp180_T/10, bmp180_T%10, c_temp); // convert bmp180 temp to a string
 	lcd_puts(buf); // print temperature to first line of screen
 	lcd_goto(0x04); // goto next line
-
-	sprintf(buf, "%d", bmp180_P); // convert bmp180 pressure to a string
+	sprintf(buf, "Pres: %ld.%ld hPa", bmp180_P/100, bmp180_P%100); // convert bmp180 pressure to a string
+	lcd_puts(buf); // print pressure to second line of lcd
 }
 
 
@@ -210,7 +210,7 @@ void print_sensors()
 void init()
 {
 	DDRA |= (1<<4); // set PA4 to output (LED blink)
-
+	lcd_init();
 	uart_init();
 	i2c_init();
 	sensor_init();
