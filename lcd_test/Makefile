@@ -1,5 +1,5 @@
 TARGET=main
-OBJS=main.o lcd.o
+OBJS=main.o hd44780.o
 
 CC=avr-gcc
 
