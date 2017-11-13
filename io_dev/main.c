@@ -22,10 +22,11 @@ struct {
 	short B1, B2, MB, MC, MD;
 	long B5;
 } bmp180_calib;
-
+int bmp180_oss = 0;	// pressure oversampling used.  if increased, adjust conversion time
 long UT; // uncalibrated temp
 long UP;	// ubcalibrated pressure
 long bmp180_T;
+long bmp180_P;
 /* * */
 
 void i2c_write_test()
@@ -67,6 +68,47 @@ void bmp180_read_calib(void)
 	i2c_stop();
 }
 
+void bmp180_read_u_temp(void)
+{
+	// trigger temp start
+	i2c_start();
+	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); // device address
+	i2c_write_byte(0xF4);	// register address
+	i2c_write_byte(0x2E);	// register data
+	i2c_stop();
+	
+	_delay_ms(5); // wait for temp conversion
+	// read ut
+	i2c_start();
+	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); // device address
+	i2c_write_byte(0xF6);	// read addr (temp msb)
+	i2c_start();	// restart
+	i2c_write_byte(BMP180_ADDR<<1 | TW_READ); // begin read
+	UT = (i2c_read_byte(1) << 8) + i2c_read_byte(0);
+	i2c_stop();
+}
+
+void bmp180_read_u_pres(void)
+{
+	// trigger pressure start by writing 0x34+(oss<<6) to reg 0xF4 and waiting
+	i2c_start();
+	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); 
+	i2c_write_byte(0xF4);	// register addr
+	i2c_write_byte(0x34+(bmp180_oss<<6));	// register data
+	i2c_stop();
+
+	_delay_ms(5);	// 5ms conversion time for 0 oversampling
+	
+	// read UP
+	i2c_start();
+	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); // sending read addr
+	i2c_write_byte(0xF6);	// read addr (pressure MSB)
+	i2c_start();	// restart
+	i2c_write_byte(BMP180_ADDR<<1 | TW_READ); //  begin read
+	UP = (((long)i2c_read_byte(1) << 16) + ((long)i2c_read_byte(1) << 8) + i2c_read_byte(0)) >> (8-bmp180_oss);
+	i2c_stop();
+}
+
 long bmp180_calc_true_temp(long u_temp)
 {
 	long X1, X2, T;
@@ -77,6 +119,34 @@ long bmp180_calc_true_temp(long u_temp)
 	T = (bmp180_calib.B5 + 8)>>4;
 
 	return T;
+}
+
+
+long bmp180_calc_true_pres(long u_pres)
+{
+	// from datasheet.
+	long X1, X2, X3, B3, B6, P;
+	unsigned long B4, B7;
+	B6 = bmp180_calib.B5 - 4000;
+	X1 = ((long)bmp180_calib.B2 * (B6 * B6)>>12)>>11;
+	X2 = ((long)bmp180_calib.AC2 * B6)>>11;
+	X3 = X1 + X2;
+	B3 = (((((long)bmp180_calib.AC1)*4 + X3)<<bmp180_oss) + 2)>>2;
+	X1 = ((long)bmp180_calib.AC3 * B6)>>13;
+	X2 = ((long)bmp180_calib.B1 * ((B6 * B6)>>12))>>16;
+	X3 = ((X1 + X2) + 2)>>2;
+	B4 = ((long)bmp180_calib.AC4 * (unsigned long)(X3 + 32768))>>15;
+	B7 = ((unsigned long)u_pres - B3) * (50000>>bmp180_oss);
+	if (B7 < 0x80000000UL)	P = (B7 * 2)/B4;
+	else P = (B7/B4) * 2;
+
+	X1 = (P>>8) * (P>>8);
+	X1 = (X1 * 3038) >> 16;
+	X2 = (-7357 * P)>>16;
+
+	P += (X1 + X2 + 3791) >> 4;
+
+	return P;
 }
 
 void sensor_init()
@@ -112,23 +182,8 @@ void read_sensors()
 
 	
 	/* reading uncalibrated temp and pressure from bmp180 */
-	// trigger temp start
-	i2c_start();
-	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); // device address
-	i2c_write_byte(0xF4);	// register address
-	i2c_write_byte(0x2E);	// register data
-	i2c_stop();
-	
-	_delay_ms(5); // wait for temp conversion
-	// read ut
-	i2c_start();
-	i2c_write_byte(BMP180_ADDR<<1 | TW_WRITE); // device address
-	i2c_write_byte(0xF6);	// read addr (temp msb)
-	i2c_start();	// restart
-	i2c_write_byte(BMP180_ADDR<<1 | TW_READ); // begin read
-	UT = (i2c_read_byte(1) << 8) + i2c_read_byte(0);
-	i2c_stop();
-
+	bmp180_read_u_temp();
+	bmp180_read_u_pres();
 }
 
 
@@ -158,11 +213,13 @@ int main()
 		read_sensors();
 
 		bmp180_T = bmp180_calc_true_temp(UT);
+		bmp180_P = bmp180_calc_true_pres(UP);
+		
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
 		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
 	//	fprintf(&uart_strm, "H: %d.%d%%\n", c_humid/10, c_humid%10);
-		fprintf(&uart_strm, "T2: %ld\n", bmp180_T);
-//		fprintf(&uart_strm, "%f%%\n", f_humid);
+//		fprintf(&uart_strm, "T2: %ld\n", bmp180_T);
+		fprintf(&uart_strm, "P: %ld\n", bmp180_P);	
 	}
 }
