@@ -17,7 +17,7 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
-uint16_t t_offset = -25;
+int16_t t_offset = 0;
 
 volatile uint32_t aaaaa = 0;
 volatile uint32_t bbbbb = 0;
