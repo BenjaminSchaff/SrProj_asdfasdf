@@ -249,6 +249,7 @@ ISR(TIMER1_CAPT_vect)
 {
 	uint16_t tmp = ICR1; // get current timer value
 	wind_periods[wind_index] = ((n_overflows << 16) + tmp) - prev_timer_capture;
+	n_overflows = 0;
 	
 	wind_index++;
 	if (wind_index == NUM_WIND_SAMP)
