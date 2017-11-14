@@ -17,17 +17,17 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
+int16_t t_offset = -25;
 
 volatile uint16_t prev_timer_capture = 0;
 volatile uint8_t wind_index = 0;
 volatile uint32_t wind_periods[NUM_WIND_SAMP];
-volatile uint32_t aaaaa = 0;
 volatile uint32_t n_overflows = 0;
 
 uint32_t avg_wind_freq;
+int wind_freq_divider = 52;
 
 /* BMP180 variables */
-
 struct {
 	short AC1, AC2, AC3;
 	unsigned short AC4, AC5, AC6;
@@ -189,7 +189,7 @@ void read_sensors()
 	humid |= i2c_read_byte(0);	// humid LSB
 	i2c_stop();
 
-	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400;
+	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 
 	// trigger measurement
@@ -228,7 +228,8 @@ void print_sensors()
 	lcd_puts(buf); // print pressure to second line of lcd
 
 	lcd_goto(0x14);
-	sprintf(buf, "Frequency: %ld", avg_wind_freq);
+	sprintf(buf, "Speed: %d.%d mph", (int)avg_wind_freq/wind_freq_divider,
+			(int)((avg_wind_freq*10/wind_freq_divider)%10));
 	lcd_puts(buf);
 
 //	lcd_goto(0x54);
