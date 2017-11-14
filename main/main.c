@@ -17,10 +17,14 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 uint16_t temp, humid;
 uint16_t c_temp, c_humid; // in dec-celcius and 
-int16_t t_offset = 0;
 
+volatile uint16_t prev_timer_capture = 0;
+volatile uint8_t wind_index = 0;
+volatile uint32_t wind_periods[NUM_WIND_SAMP];
 volatile uint32_t aaaaa = 0;
-volatile uint32_t bbbbb = 0;
+volatile uint32_t n_overflows = 0;
+
+uint32_t avg_wind_freq;
 
 /* BMP180 variables */
 
@@ -172,6 +176,9 @@ void sensor_init()
 
 void read_sensors()
 {
+	int i;
+	avg_wind_freq = 0;
+
 	// read temp and humidity
 	i2c_start();
 	i2c_write_byte((TEMP_SENSE_ADDR<<1) | TW_READ);
@@ -182,7 +189,7 @@ void read_sensors()
 	humid |= i2c_read_byte(0);	// humid LSB
 	i2c_stop();
 
-	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset;
+	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 
 	// trigger measurement
@@ -197,6 +204,12 @@ void read_sensors()
 	/* reading uncalibrated temp and pressure from bmp180 */
 	bmp180_read_u_temp();
 	bmp180_read_u_pres();
+
+	/* Calculate average frequency */
+	for (i = 0; i < NUM_WIND_SAMP; i++)
+		avg_wind_freq += wind_periods[i];
+
+	avg_wind_freq /= NUM_WIND_SAMP;
 }
 
 void print_sensors()
@@ -212,12 +225,12 @@ void print_sensors()
 	lcd_puts(buf); // print pressure to second line of lcd
 
 	lcd_goto(0x14);
-	sprintf(buf, "Overflow: %ld", bbbbb);
+	sprintf(buf, "Frequency: %ld", avg_wind_freq);
 	lcd_puts(buf);
 
-	lcd_goto(0x54);
-	sprintf(buf, "Input Cap: %ld", aaaaa);
-	lcd_puts(buf);
+//	lcd_goto(0x54);
+//	sprintf(buf, "Input Cap: %ld", aaaaa);
+//	lcd_puts(buf);
 }
 
 
@@ -234,13 +247,21 @@ void init()
 // input capture
 ISR(TIMER1_CAPT_vect)
 {
-	aaaaa++;
+	uint16_t tmp = ICR1; // get current timer value
+	wind_periods[wind_index] = ((n_overflows << 16) + tmp) - prev_timer_capture;
+	
+	wind_index++;
+	if (wind_index == NUM_WIND_SAMP)
+		wind_index = 0;
+
+	prev_timer_capture = tmp;
 }
 
 // overflow
 ISR(TIMER1_OVF_vect)
 {
-	bbbbb++;
+	// TODO handle extremely low rpm
+	n_overflows++;
 }
 
 int main() 
