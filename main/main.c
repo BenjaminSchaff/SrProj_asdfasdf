@@ -205,11 +205,14 @@ void read_sensors()
 	bmp180_read_u_temp();
 	bmp180_read_u_pres();
 
-	/* Calculate average frequency */
+	/* Calculate average period */
 	for (i = 0; i < NUM_WIND_SAMP; i++)
 		avg_wind_freq += wind_periods[i];
 
-	avg_wind_freq /= NUM_WIND_SAMP;
+	avg_wind_freq /= NUM_WIND_SAMP; // average period
+
+	// convert to frequency from period
+	avg_wind_freq = 1000000/avg_wind_freq;
 }
 
 void print_sensors()
