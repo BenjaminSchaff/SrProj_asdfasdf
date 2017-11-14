@@ -15,9 +15,9 @@
 
 FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
-uint16_t temp, humid;
-uint16_t c_temp, c_humid; // in dec-celcius and 
+int16_t c_temp; // in 0.1 degree celcius
 int16_t t_offset = -25;
+uint16_t c_humid;
 
 volatile uint16_t prev_timer_capture = 0;
 volatile uint8_t wind_index = 0;
@@ -39,8 +39,10 @@ long UT; // uncalibrated temp
 long UP;	// ubcalibrated pressure
 long bmp180_T;
 long bmp180_P;
-char buf[20];
+int p_offset = 1100;
+
 /* * */
+char buf[20];
 
 void i2c_write_test()
 {
@@ -177,7 +179,8 @@ void sensor_init()
 void read_sensors()
 {
 	int i;
-	avg_wind_freq = 0;
+	uint16_t temp, humid;
+	
 
 	// read temp and humidity
 	i2c_start();
@@ -189,7 +192,7 @@ void read_sensors()
 	humid |= i2c_read_byte(0);	// humid LSB
 	i2c_stop();
 
-	c_temp = ((uint32_t)(temp) * 1650) / 65536 - 400 + t_offset;
+	c_temp = (((int32_t)(temp) * 1650) / 65536 - 400) + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 
 	// trigger measurement
@@ -206,6 +209,7 @@ void read_sensors()
 	bmp180_read_u_pres();
 
 	/* Calculate average period */
+	avg_wind_freq = 0;
 	for (i = 0; i < NUM_WIND_SAMP; i++)
 		avg_wind_freq += wind_periods[i];
 
@@ -220,7 +224,7 @@ void print_sensors()
 	lcd_clrscr();
 	lcd_home();
 
-	sprintf(buf, "Temp: %d.%d C", c_temp/10, c_temp%10); // convert temp to a string
+	sprintf(buf, "Temp: %d.%d C", c_temp/10, abs(c_temp%10)); // convert temp to a string
 	lcd_puts(buf); // print temperature to first line of screen
 
 	lcd_goto(0x40); // goto next line
@@ -274,19 +278,16 @@ int main()
 	init();
 
 	while (1) {
-		PORTA |= (1<<4);
-		_delay_ms(100);
-		PORTA &= ~(1<<4);
-		_delay_ms(100);
+		PORTA ^= (1<<4);
 
 // i2c_write_test();
 		read_sensors();
 
 		bmp180_T = bmp180_calc_true_temp(UT);
-		bmp180_P = bmp180_calc_true_pres(UP);
+		bmp180_P = bmp180_calc_true_pres(UP) + p_offset;
 		
 		print_sensors();
-		_delay_ms(300);
+		_delay_ms(950);
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
 //		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
