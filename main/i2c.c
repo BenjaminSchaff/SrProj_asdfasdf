@@ -1,6 +1,7 @@
 #include "defines.h"
 
 #include <avr/io.h>
+#include <util/twi.h>
 #include "i2c.h" 
 
 
