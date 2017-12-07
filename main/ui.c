@@ -1,6 +1,6 @@
 #include "ui.h"
 
-SCREEN *update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
+void update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
 {
 	int ret = current_screen_index;
 
@@ -39,7 +39,29 @@ SCREEN *update_screen_state(int button, int current_screen_index, SCREEN *curren
 	} 
 }
 
-void update_screen_text(SCREEN *current_screen)
+void print_screen(SCREEN *current_screen)
 {
+	lcd_clrscr();
+	lcd_puts((current_screen->lines)[screen_index]);
+	lcd_goto(0x40);
+	lcd_puts((current_screen->lines)[screen_index + 1]);
+	lcd_goto(0x14);
+	lcd_puts((current_screen->lines)[screen_index + 2]);
+	lcd_goto(0x54);
+	lcd_puts((current_screen->lines)[screen_index + 3]);
 
+	switch (current_screen->curser_index - current_screen->screen_index) {
+	case 0:
+		lcd_home();
+		break;
+	case 1:
+		lcd_goto(0x40);
+		break;
+	case 2:
+		lcd_goto(0x14);
+		break;
+	case 3:
+		lcd_goto(0x54);
+		break;
+	}
 }

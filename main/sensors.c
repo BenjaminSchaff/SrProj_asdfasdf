@@ -271,6 +271,3 @@ void update_sensors()
 	bmp180_T = bmp180_calc_true_temp(UT);
 	bmp180_P = bmp180_calc_true_pres(UP) + p_offset;	
 }
-
-
-

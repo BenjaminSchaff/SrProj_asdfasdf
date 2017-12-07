@@ -2,7 +2,7 @@
 #define asdfasdf_ui
 
 typedef struct screen_ui {
-	char *lines;
+	char **lines;
 	int *line_values;
 	int *max_values;
 	int length;
@@ -10,5 +10,5 @@ typedef struct screen_ui {
 	int curser_index;
 } SCREEN;
 
-SCREEN *update_screen_state(int button, int current_screen_index, SCREEN *current_screen);
+void update_screen_state(int button, int current_screen_index, SCREEN *current_screen);
 void update_screen_text(SCREEN *current_screen);
