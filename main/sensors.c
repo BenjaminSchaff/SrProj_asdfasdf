@@ -84,6 +84,11 @@ unsigned int get_wind()
 	return (avg_wind_freq*10)/wind_freq_divider;
 }
 
+uint64_t get_time()
+{
+	static uint64_t time = 0;
+	return time++;
+}
 
 // Anemometer input capture counter
 ISR(TIMER1_CAPT_vect)
