@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "uart.h"
+#include "i2c.h"
 #include "sensors.h"
 #include "hd44780_settings.h"
 #include "hd44780.h"
