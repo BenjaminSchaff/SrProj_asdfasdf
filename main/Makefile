@@ -1,5 +1,5 @@
 TARGET=main
-OBJS=main.o uart.o i2c.o hd44780.o sensors.o
+OBJS=main.o uart.o i2c.o hd44780.o sensors.o ui.o
 
 CC=avr-gcc
 

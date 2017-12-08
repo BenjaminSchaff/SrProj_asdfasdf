@@ -17,33 +17,7 @@
 FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 char buf[20];
-SCREEN ui[4];
-SCREEN main_menu {
-	lines = {"Sensors", "Saved Data", "Settings", " "};
-	line_values = {0, 0, 0, 0};
-	max_values = {0, 0, 0, 0};
-	length = 4;
-	screen_index = 0;
-	curser_index = 0;
-};
-
-SCREEN sensor_readouts {
-	lines = {"Temp: 0 C", "Pres: 0 hPa", "Wind: 0 MPH", "Humidity: 0\%RH", "Wind Chill: 0 C", "Dew Point: 0", "Humidex: 0"};
-	line_values = {0, 1, 2, 3, 4, 5, 6};
-	max_values = {6, 6, 6, 6, 6, 6, 6};
-	length = 7;
-	screen_index = 0;
-	curser_index = 0;
-};
-
-SCREEN settings {
-	lines = {"Temp Units: C", "Press Units: hPa", "Wind Units: MPH", "Factory Defaults"};
-	line_values = {0, 0, 0, 0};
-	max_values = {1, 2, 3, 2};
-	length = 4;
-	screen_index = 0;
-	curser_index = 0;
-};
+SCREEN ui[3];
 
 void sensor_readout_update()
 {
@@ -72,6 +46,7 @@ void init()
 	uart_init();
 	i2c_init();
 	sensor_init();
+	ui_init(ui);
 }
 
 int main() 
@@ -83,7 +58,7 @@ int main()
 
 		update_sensors();
 		
-		print_sensors();
+		sensor_readout_update();
 		_delay_ms(950);
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
