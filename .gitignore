@@ -32,5 +32,9 @@
 *.dSYM/
 *.su
 
+
+*.swp
+*.img
+
 # Google Drive BS
 desktop.ini
