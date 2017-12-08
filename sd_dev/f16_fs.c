@@ -1,3 +1,4 @@
+// file f16_fs.c
 #define DEBUG
 
 #include <stdlib.h>
@@ -5,6 +6,9 @@
 #ifdef DEBUG
 	#include <stdio.h>
 #endif
+
+
+#include "f16_fs.h"
 
 struct f16_part_table { // sizeof()=16B
 	uint8_t first_byte;
@@ -75,31 +79,6 @@ struct {
 	
 } f16_state;
 
-FILE *fin;
-
-/*
- * Sets read to specific addr on disk
- */
-void f16_seek(uint32_t offset)
-{
-	fseek(fin, offset, SEEK_SET); //TODO make this use SD functions
-}
-
-/*
- * Reads a block of data from disk to read/write buffer
- */
-uint16_t f16_read(uint16_t count)
-{
-	// TODO, limit size to <512?
-	return (uint16_t)fread(f16_r_buffer, 1, count, fin); //TODO read from SD
-}
-
-
-uint16_t f16_write(uint16_t count)
-{
-	// TODO write contents of buffer to disk
-	return 0;
-}
 
 /* 
  * Reads partition table on disk.  Goes to first partition found.
@@ -146,11 +125,7 @@ int f16_init()
 	f16_seek(512 * ptable->start_sector);
 	f16_read(sizeof(struct f16_boot_sector));
 	
-#ifdef DEBUG
-	printf("Now at 0x%lX, sector size %d, FAT size %d sectors, %d FATs\n\n", 
-		   ftell(fin), bootsect->sector_size, bootsect->fat_size_sects, bootsect->num_fats);
-#endif		   
-	
+
 	// if sector size isn't 512, it won't work with SD card as implimented
 	if (bootsect->sector_size != 512) {
 		return -1;
@@ -173,10 +148,6 @@ int f16_init()
 	// Go to start of root dir
 	f16_seek(f16_state.root_start);
 
-#ifdef DEBUG
-	printf("\nMoved to start of Root directory, now at 0x%lX\n", ftell(fin));
-#endif
-
 
 
 
@@ -190,11 +161,6 @@ int f16_init()
 		//printf("
 	}
 	
-#ifdef DEBUG
-	printf("\nRoot directory read, now at 0x%lX\n", ftell(fin));
-#endif
-	
-
 	return 0;
 }
 
@@ -210,28 +176,5 @@ void f16_read_file(uint16_t bytes)
 	f16_seek(f16_state.data_start + (f16_state.file_start_cluster-2)*f16_state.sect_per_cluster*512);
 	f16_read(bytes);
 
-}
-
-
-int main(int argc, char **argv) {
-
-	if (argc > 1) {
-		fin = fopen(argv[1], "rb");
-	} else {
-		fin = fopen("test.img", "rb");
-	}
-	
-
-	f16_init();
-
-	f16_read_file(32);
-
-
-	f16_r_buffer[sizeof(f16_r_buffer)-1] = 0;	
-	printf("%s\n",f16_r_buffer);
-
-
-	fclose(fin);
-	return 0;
 }
 
