@@ -3,6 +3,7 @@ Title  :   HD44780 Library
 Author :   SA Development
 Version:   1.11
 *****************************************************************************/
+// Daniel Paradis and Benjamin Schaff DID NOT WRITE THIS. No points for grade.
 
 #include <avr/pgmspace.h>
 #include "hd44780.h"

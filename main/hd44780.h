@@ -3,6 +3,7 @@ Title  :   HD44780 Library
 Author :   SA Development
 Version:   1.11
 *****************************************************************************/
+// Daniel Paradis and Benjamin Schaff DID NOT WRITE THIS. No points for grade.
 
 #ifndef HD44780_H
 #define HD44780_H

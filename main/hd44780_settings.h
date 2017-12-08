@@ -1,3 +1,5 @@
+// Daniel Paradis and Benjamin Schaff DID NOT WRITE THIS. No points for grade.
+// This file has been edited however to allow the right ports to be assigned
 #ifndef HD44780_SETTINGS_H
 #define HD44780_SETTINGS_H
 

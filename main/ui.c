@@ -122,18 +122,20 @@ void update_settings_strings(SCREEN *s)
 	}
 }
 
-void update_sensor_strings(SCREEN *sensors, SCREEN *settings)
+void update_sensor_strings(SCREEN *sensors, SCREEN *settings, char ret[21])
 {
-	int i;
-
-	for (i = 0; i < sensors->length; i++) {
-		
-	}
+	sprintf(sensors->lines[0], get_temp_string(settings, ret));
+	sprintf(sensors->lines[1], get_pressure_string(settings, ret));
+	sprintf(sensors->lines[2], get_wind_string(settings, ret));
+	sprintf(sensors->lines[3], get_humidity_string(ret));
+	sprintf(sensors->lines[4], get_wind_chill_string(ret));
+	sprintf(sensors->lines[5], get_dew_point_string(ret));
+	sprintf(sensors->lines[6], get_humidex_string(ret));
 }
 
 /* Changes units for temperature in accordance to what the settings say        */
 /* Returns the string that should be saved in the sensor screen's lines array */
-void get_temp_string(SCREEN *settings, char ret[21])
+char *get_temp_string(SCREEN *settings, char ret[21])
 {
 	int16_t temp = get_temp();
 
@@ -143,11 +145,13 @@ void get_temp_string(SCREEN *settings, char ret[21])
 		temp = (temp * 9)/5 + 320; // convert temp to fahrenheit
 		sprintf(ret, "Temp: %d.%d F", temp/10, abs(temp%10));
 	}
+
+	return ret;
 }
 
 /* Changes units for pressure in accordance to what the settings say          */
 /* Returns the string that should be saved in the sensor screen's lines array */
-void get_pressure_string(SCREEN *settings, char ret[21])
+char *get_pressure_string(SCREEN *settings, char ret[21])
 {
 	unsigned long pressure = get_pressure();
 
@@ -163,11 +167,13 @@ void get_pressure_string(SCREEN *settings, char ret[21])
 		else
 			sprintf(ret, "Pres: 1.%lu bars", (pressure/10)%10);
 	}
+
+	return ret;
 }
 
 /* Changes units for wind speed in accordance to what the settings say        */
 /* Returns the string that should be saved in the sensor screen's lines array */
-void get_wind_string(SCREEN *settings, char ret[21])
+char *get_wind_string(SCREEN *settings, char ret[21])
 {
 	unsigned int wind = get_wind();
 
@@ -183,6 +189,31 @@ void get_wind_string(SCREEN *settings, char ret[21])
         wind = (wind * 10) / 2.236; // convert to m/s and keep sig figs
         sprintf(ret, "Wind: %u.%u m/s", wind/100, wind%100);
 	}
+
+	return ret;
+}
+
+char *get_humidity_string(char ret[21])
+{
+	uint16_t humid = get_humid();
+	sprintf(ret, "Humidity: %u%% RH", humid);
+
+	return ret;
+}
+
+char *get_wind_chill_string(char ret[21])
+{
+
+}
+
+char *get_dew_point_string(char ret[21])
+{
+
+}
+
+char *get_humidex_string(char ret[21])
+{
+
 }
 
 void ui_init(SCREEN ui[3])
