@@ -43,4 +43,6 @@ int f16_init();
 
 void f16_seek_file(uint32_t position);
 
-void f16_read_file(uint16_t bytes);
+int f16_open_file(char *filename);
+
+uint16_t f16_read_file(uint16_t bytes);

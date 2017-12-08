@@ -19,7 +19,7 @@ void f16_seek(uint32_t offset)
  */
 uint16_t f16_read(uint16_t count)
 {
-	// TODO, limit size to <512?
+	// TODO, limit size to <32?
 	return (uint16_t)fread(f16_r_buffer, 1, count, fin); //TODO read from SD
 }
 
@@ -39,8 +39,17 @@ int main(int argc, char **argv) {
 		fin = fopen("test.img", "rb");
 	}
 	
+	char filename[12] = "LOG     TXT";
+
 
 	f16_init();
+
+	if(f16_open_file(filename)) {
+		printf("Failed to open file\n");	
+	} else {
+		printf("Successfully openned file: %s", filename);
+	}
+
 
 	f16_read_file(32);
 
