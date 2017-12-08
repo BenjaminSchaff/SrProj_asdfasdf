@@ -12,3 +12,5 @@ typedef struct screen_ui {
 
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen);
 void update_screen_text(SCREEN *current_screen);
+void update_settings_strings(SCREEN *s);
+void update_sensor_strings(SCREEN *s);

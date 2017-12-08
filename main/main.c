@@ -19,17 +19,17 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 char buf[20];
 SCREEN ui[4];
 SCREEN main_menu {
-	lines = {"Sensors", "Saved Data", "Settings"};
-	line_values = {0, 0, 0};
-	max_values = {1, 1, 1};
-	length = 3;
+	lines = {"Sensors", "Saved Data", "Settings", " "};
+	line_values = {0, 0, 0, 0};
+	max_values = {0, 0, 0, 0};
+	length = 4;
 	screen_index = 0;
 	curser_index = 0;
 };
 
 SCREEN sensor_readouts {
 	lines = {"Temperature", "Pressure", "Wind Speed", "Humidity", "Wind Chill", "Dew Point", "Humidex"};
-	line_values = {0, 0, 0, 0, 0, 0, 0};
+	line_values = {0, 1, 2, 3, 4, 5, 6};
 	max_values = {6, 6, 6, 6, 6, 6, 6};
 	length = 7;
 	screen_index = 0;
@@ -37,10 +37,10 @@ SCREEN sensor_readouts {
 };
 
 SCREEN settings {
-	lines = {"Temp Units", "Press Units", "Wind Units"};
-	line_values = {0, 0, 0};
-	max_values = {1, 2, 3};
-	length = 3;
+	lines = {"Temp Units: C", "Press Units: hPa", "Wind Units: MPH", "Factory Defaults"};
+	line_values = {0, 0, 0, 0};
+	max_values = {1, 2, 3, 2};
+	length = 4;
 	screen_index = 0;
 	curser_index = 0;
 };

@@ -1,4 +1,11 @@
+#include "defines.h"
+
+#include <avr/io.h>
+
 #include "ui.h"
+#include "hd44780_settings.h"
+#include "hd44780.h"
+#include "sensors.h"
 
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
 {
@@ -64,4 +71,59 @@ void print_screen(SCREEN *current_screen)
 		lcd_goto(0x54);
 		break;
 	}
+}
+
+void update_settings_strings(SCREEN *s)
+{
+	int i;
+	
+	for (i = 0; i < s->length; i++) {
+		if (i == 0) {
+			switch (s->line_values[i]) {
+			case 0:
+				s->lines[i] = "Temp Units: C";
+				break;
+			case 1:
+				s->lines[i] = "Temp Units: F";
+				break;
+			}
+		} else if (i == 1) {
+			switch (s->line_values[i]) {
+			case 0:
+				s->lines[i] = "Press Units: hPa";
+				break;
+			case 1:
+				s->lines[i] = "Press Units: atm";
+				break;
+			case 2:
+				s->lines[i] = "Press Units: bars";
+				break;
+			}
+		} else if (i == 2) {
+			switch (s->line_values[i]) {
+			case 0:
+				s->lines[i] = "Wind Units: MPH";
+				break;
+			case 1:
+				s->lines[i] = "Wind Units: KPH";
+				break;
+			case 2:
+				s->lines[i] = "Wind Units: ft/s";
+				break;
+			case 3:
+				s->lines[i] = "Wind Units: m/s";
+				break;
+			}
+		} else {
+			if (s->line_values[i] == 2) {
+				s->lines[i] = "Temp Units: C";
+				s->lines[i] = "Press Units: hPa";
+				s->lines[i] = "Wind Units: MPH";
+			}
+		}
+	}
+}
+
+void update_sensor_strings(SCREEN *s)
+{
 }
