@@ -77,53 +77,67 @@ void update_settings_strings(SCREEN *s)
 {
 	int i;
 	
-	for (i = 0; i < s->length; i++) {
-		if (i == 0) {
-			switch (s->line_values[i]) {
-			case 0:
-				s->lines[i] = "Temp Units: C";
-				break;
-			case 1:
-				s->lines[i] = "Temp Units: F";
-				break;
-			}
-		} else if (i == 1) {
-			switch (s->line_values[i]) {
-			case 0:
-				s->lines[i] = "Press Units: hPa";
-				break;
-			case 1:
-				s->lines[i] = "Press Units: atm";
-				break;
-			case 2:
-				s->lines[i] = "Press Units: bars";
-				break;
-			}
-		} else if (i == 2) {
-			switch (s->line_values[i]) {
-			case 0:
-				s->lines[i] = "Wind Units: MPH";
-				break;
-			case 1:
-				s->lines[i] = "Wind Units: KPH";
-				break;
-			case 2:
-				s->lines[i] = "Wind Units: ft/s";
-				break;
-			case 3:
-				s->lines[i] = "Wind Units: m/s";
-				break;
-			}
-		} else {
-			if (s->line_values[i] == 2) {
-				s->lines[i] = "Temp Units: C";
-				s->lines[i] = "Press Units: hPa";
-				s->lines[i] = "Wind Units: MPH";
-			}
-		}
+	switch (s->line_values[0]) {
+	case 0:
+		s->lines[0] = "Temp Units: C";
+		break;
+	case 1:
+		s->lines[0] = "Temp Units: F";
+		break;
+	}
+
+	switch (s->line_values[1]) {
+	case 0:
+		s->lines[1] = "Press Units: hPa";
+		break;
+	case 1:
+		s->lines[1] = "Press Units: atm";
+		break;
+	case 2:
+		s->lines[1] = "Press Units: bars";
+		break;
+	}
+
+	switch (s->line_values[2]) {
+	case 0:
+		s->lines[2] = "Wind Units: MPH";
+		break;
+	case 1:
+		s->lines[2] = "Wind Units: KPH";
+		break;
+	case 2:
+		s->lines[2] = "Wind Units: ft/s";
+		break;
+	case 3:
+		s->lines[2] = "Wind Units: m/s";
+		break;
+	}
+
+	if (s->line_values[3] == 2) {
+		s->lines[0] = "Temp Units: C";
+		s->lines[1] = "Press Units: hPa";
+		s->lines[2] = "Wind Units: MPH";
+		s->line_values[3] = 0;
 	}
 }
 
-void update_sensor_strings(SCREEN *s)
+void update_sensor_strings(SCREEN *sensors, SCREEN *settings)
+{
+	int i;
+
+	for (i = 0; i < sensors->length; i++) {
+		
+	}
+}
+
+char *get_temp_string()
+{
+}
+
+char *get_pressure_string()
+{
+}
+
+char *get_wind_string()
 {
 }

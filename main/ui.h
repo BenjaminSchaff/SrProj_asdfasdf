@@ -14,3 +14,6 @@ void update_screen_state(int button, int current_screen_index, SCREEN *current_s
 void update_screen_text(SCREEN *current_screen);
 void update_settings_strings(SCREEN *s);
 void update_sensor_strings(SCREEN *s);
+char *get_temp_string();
+char *get_pressure_string();
+char *get_wind_string();

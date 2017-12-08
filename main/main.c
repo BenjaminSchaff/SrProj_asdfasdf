@@ -28,7 +28,7 @@ SCREEN main_menu {
 };
 
 SCREEN sensor_readouts {
-	lines = {"Temperature", "Pressure", "Wind Speed", "Humidity", "Wind Chill", "Dew Point", "Humidex"};
+	lines = {"Temp: 0 C", "Pres: 0 hPa", "Wind: 0 MPH", "Humidity: 0\%RH", "Wind Chill: 0 C", "Dew Point: 0", "Humidex: 0"};
 	line_values = {0, 1, 2, 3, 4, 5, 6};
 	max_values = {6, 6, 6, 6, 6, 6, 6};
 	length = 7;
