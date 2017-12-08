@@ -1,6 +1,7 @@
 #include "defines.h"
 
 #include <avr/io.h>
+#include <stdlib.h>
 
 #include "ui.h"
 #include "hd44780_settings.h"
@@ -77,30 +78,30 @@ void update_settings_strings(SCREEN *s)
 {
 	int i;
 	
-	switch (s->line_values[0]) {
+	switch (s->line_values[0]) { // check what value temp is
 	case 0:
-		s->lines[0] = "Temp Units: C";
+		s->lines[0] = "Temp Units: C"; // choose C or F depending on it
 		break;
 	case 1:
 		s->lines[0] = "Temp Units: F";
 		break;
 	}
 
-	switch (s->line_values[1]) {
+	switch (s->line_values[1]) { // check what value Pressure should be
 	case 0:
-		s->lines[1] = "Press Units: hPa";
+		s->lines[1] = "Press Units: hPa"; // choose hPa, atm, or bars
 		break;
 	case 1:
-		s->lines[1] = "Press Units: atm";
+		s->lines[1] = "Press Units: psi";
 		break;
 	case 2:
 		s->lines[1] = "Press Units: bars";
 		break;
 	}
 
-	switch (s->line_values[2]) {
+	switch (s->line_values[2]) { // check what value wind should be
 	case 0:
-		s->lines[2] = "Wind Units: MPH";
+		s->lines[2] = "Wind Units: MPH"; // pick mph, kph, m/s, or ft/s depending on the value
 		break;
 	case 1:
 		s->lines[2] = "Wind Units: KPH";
@@ -113,10 +114,13 @@ void update_settings_strings(SCREEN *s)
 		break;
 	}
 
-	if (s->line_values[3] == 2) {
+	if (s->line_values[3] == 2) { // reset everything to zero
 		s->lines[0] = "Temp Units: C";
 		s->lines[1] = "Press Units: hPa";
 		s->lines[2] = "Wind Units: MPH";
+		s->line_values[0] = 0;
+		s->line_values[1] = 0;
+		s->line_values[2] = 0;
 		s->line_values[3] = 0;
 	}
 }
@@ -130,14 +134,63 @@ void update_sensor_strings(SCREEN *sensors, SCREEN *settings)
 	}
 }
 
-char *get_temp_string()
+/* Changes units for temperature in accordance to what the settings say        */
+/* Returns the string that should be saved in the sensor screen's lines array */
+char *get_temp_string(SCREEN *settings)
 {
+	char ret[20];
+	int16_t temp = get_temp();
+
+	if (settings->line_values[0] == 0) { // if temp setting says to use Fahrenheit
+		sprintf(ret, "Temp: %d.%d C", temp/10, abs(temp%10)); // convert temp to a string
+	} else { // Temp units should be in Fahrenheit
+		temp = (temp * 9)/5 + 320; // convert temp to fahrenheit
+		sprintf(ret, "Temp: %d.%d F", temp/10, abs(temp%10));
+	}
+	
+	return ret;
 }
 
+/* Changes units for pressure in accordance to what the settings say          */
+/* Returns the string that should be saved in the sensor screen's lines array */
 char *get_pressure_string()
 {
+	char ret[20];
+	unsigned long pressure = get_pressure();
+
+	if (settings->line_values[1] == 0) { // if setting is 0 use hPa as unit
+		sprintf(ret, "Pres: %lu.%lu hPa", pressure/100, pressure%100); // print to ret, the pressure in hPa
+	} else if (settings->line_values[1] == 1) {
+		pressure = (pressure * 10) / 6894 ; // convert to psi
+		sprintf(ret, "Pres: %lu.%lu psi", pressure/10, pressure%10);
+	} else { // convert to bars
+		pressure = (pressure * 100) / 10000; // the * 100 is to preserve sig figs
+		if (press < 1000)
+			sprintf(ret, "Pres: 0.%lu bars", pressure);
+		else
+			sprintf(ret, "Pres: 1.%lu bars", (pressure/10)%10);
+	}
+
+	return ret;
 }
 
+/* Changes units for wind speed in accordance to what the settings say        */
+/* Returns the string that should be saved in the sensor screen's lines array */
 char *get_wind_string()
 {
+	char ret[20];
+	unsigned int wind = get_wind();
+
+	if (settings->line_values[2] == 0) { // print as mph
+		sprintf(ret, "Wind: %u.%u mph", wind/10, wind%10);
+	} else if (settings->line_values[2] == 1) {
+		wind = wind * 1.61; // convert to kph
+		sprintf(ret, "Wind: %u.%u kph", wind/10, wind%10);
+	} else if (settings->line_values[2] == 2) { // convert to ft/s
+		wind = wind * 1.46667;
+		sprintf(ret, "Wind: %u.%u ft/s", wind/10, wind%10);
+	} else {
+        wind = (wind * 10) / 2.236; // convert to m/s and keep sig figs
+        sprintf(ret, "Wind: %u.%u m/s", wind/100, wind%100);
+	}
 }
