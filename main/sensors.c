@@ -55,6 +55,9 @@ int p_offset = 1100;
 //TODO, do away with these
 int16_t c_temp; // in 0.1 degree celcius
 uint16_t c_humid;
+int16_t c_dew_point;
+int16_t c_wind_chill;
+int16_t c_humidex;
 
 
 /*** Sensor read functions ***/
@@ -82,6 +85,21 @@ unsigned long get_pressure()
 unsigned int get_wind()
 {
 	return (avg_wind_freq*10)/wind_freq_divider;
+}
+
+int16_t get_dew_point()
+{
+	return c_dew_point;
+}
+
+int16_t get_humidex()
+{
+	return c_humidex;
+}
+
+int16_t get_wind_chill()
+{
+	return c_wind_chill;
 }
 
 uint64_t get_time()
@@ -248,6 +266,9 @@ void update_sensors()
 
 	c_temp = (((int32_t)(temp) * 1650) / 65536 - 400) + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
+	c_dew_point = c_temp - (100 - c_humid) / 5; // calculate dewpoint
+	c_wind_chill = c_temp;
+	c_humidex = c_temp;
 
 	// trigger measurement
 	i2c_start();

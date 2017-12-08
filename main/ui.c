@@ -203,17 +203,26 @@ char *get_humidity_string(char ret[21])
 
 char *get_wind_chill_string(char ret[21])
 {
+	int16_t wind_chill = get_wind_chill();
+	sprintf(ret, "Wind Chill: %d C", wind_chill);
 
+	return ret;
 }
 
 char *get_dew_point_string(char ret[21])
 {
+    int16_t dew_point = get_dew_point();
+    sprintf(ret, "Dew Point: %d C", dew_point);
 
+    return ret;
 }
 
 char *get_humidex_string(char ret[21])
 {
+    int16_t humidex = get_humidex();
+    sprintf(ret, "Humidex: %d C", humidex);
 
+    return ret;
 }
 
 void ui_init(SCREEN ui[3])
