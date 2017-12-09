@@ -267,8 +267,8 @@ void update_sensors()
 	c_temp = (((int32_t)(temp) * 1650) / 65536 - 400) + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 	c_dew_point = c_temp - (100 - c_humid) / 5; // calculate dewpoint
-	c_wind_chill = c_temp;
-	c_humidex = c_temp;
+	c_wind_chill = c_temp; // TODO Make this do something
+	c_humidex = c_temp; // TODO this too
 
 	// trigger measurement
 	i2c_start();
