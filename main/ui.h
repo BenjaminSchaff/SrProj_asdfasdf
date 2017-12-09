@@ -3,8 +3,8 @@
 
 typedef struct screen_ui {
 	char lines[7][20];
-	int *line_values;
-	int *max_values;
+	int line_values[7];
+	int max_values[7];
 	int length;
 	int screen_index;
 	int curser_index;

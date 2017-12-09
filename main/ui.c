@@ -262,8 +262,8 @@ void ui_init(SCREEN ui[3])
 	sensor_readouts->curser_index = 0;
 
 	for (i = 0; i < sensor_readouts->length; i++) {
-		sensor_readouts->line_values[i] = i;
-		sensor_readouts->max_values[i] = 6;
+		sensor_readouts->line_values[i] = 0;
+		sensor_readouts->max_values[i] = 0;
 	}
 
 	// initialize setting screen to correct data
