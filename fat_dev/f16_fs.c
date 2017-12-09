@@ -50,33 +50,18 @@ struct f16_boot_sector { //sizeof()=24B
 
 
 struct f16_file { // sizeof()=32B
-	uint8_t filename[8];
-	uint8_t ext[3];
-	uint8_t attributes;
-	uint8_t reserved[10];
-	uint16_t modify_time;
-	uint16_t modify_date;
-	uint16_t starting_cluster;
+	uint8_t filename[11];
+	uint8_t attri;
+	uint8_t res[10];
+	uint16_t mod_time;
+	uint16_t mod_date;
+	uint16_t start_cluster;
 	uint32_t file_size;
 } __attribute((packed));
 
 
 uint8_t f16_r_buffer[32];	// read buffer used by fat16 disk io
 uint8_t f16_w_buffer[512];	// write buffer for fat16 
-
-/*
- * Minimum saved data for fat 16 operation
- */
-struct {
-	uint32_t fat_start; // = 0x400C00;		// Addr of FAT
-	uint32_t root_start; //=?				// Addr of root dir
-	uint32_t data_start; // = 0x440000;		// Addr of data sector
-	uint32_t sect_per_cluster; // = 128;	// Number of sectors (512 bytes) per cluster
-	uint16_t file_start_cluster; //=5;		// Index of starting cluster of file
-	uint16_t file_cur_cluster; // = 5;		// Index of file cluster being read
-	uint16_t file_cur_pos;					// Current location in file (byte index)
-	uint32_t file_size; // = 131072;		// Size of file being read, in bytes
-} f16_state;
 
 
 /* 
@@ -150,11 +135,18 @@ int f16_init()
 void f16_seek_file(uint32_t position)
 {
 	//TODO traverses FAT for current file to specified position
+
+	// Don't allow movement past end of file
 	if (position > f16_state.file_size) {
-		f16_state.file_cur_pos = f16_state.file_size;
-	} else {	
-		f16_state.file_cur_pos = position;
-	}
+		position = f16_state.file_size;
+	} 	
+	f16_state.file_cur_pos = position;
+
+
+	f16_state.global_cur_pos = f16_state.data_start + ((f16_state.file_start_cluster-2)
+			* f16_state.sect_per_cluster*512) + f16_state.file_cur_pos;
+
+	f16_seek(f16_state.global_cur_pos);
 }
 
 
@@ -174,7 +166,7 @@ int f16_open_file(char *filename)
 	// if filename[0] == '/'
 	//	set stuff back to original
 
-	//TODO, add for support subdirs
+	//TODO, add support for subdirs
 
 	for (i= 0; i < 512; i++) {
 		// read entry
@@ -211,6 +203,10 @@ int f16_open_file(char *filename)
 #endif
 		
 		//TODO stuff with aactually opening file, setting size, pos, offset, etc
+		f16_state.file_cur_pos = 0;
+		f16_state.file_start_cluster = entry->start_cluster;
+		f16_state.file_size = entry->file_size;
+		
 		// current filesize limited to one cluster
 		//TODO not do this. 
 		return 0;
@@ -233,9 +229,12 @@ uint16_t f16_read_file(uint16_t bytes)
 	if (f16_state.file_cur_pos %
 */
 
-	f16_seek(f16_state.data_start + ((f16_state.file_start_cluster-2)
-			* f16_state.sect_per_cluster*512) + f16_state.file_cur_pos);
+	// read bytes from disk
 	bytes = f16_read(bytes);
+
+	// move cursor to byte after ones read
+	f16_seek_file(f16_state.file_cur_pos + bytes);
+
 
 	return bytes;
 }

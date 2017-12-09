@@ -1,5 +1,5 @@
 TARGET=fat_test
-OBJS=fat_test.o f16_fs.o
+OBJS=fat_test.o f16_fs.o 
 
 CC=gcc
 
