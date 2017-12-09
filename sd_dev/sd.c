@@ -1,11 +1,15 @@
+#include "defines.h"
+
 #include <stdlib.h>
 #include <avr/io.h>
+#include <util/delay.h>
+
 #include "sd.h"
 
 #define SD_DEBUG // if defined, PA4 is toggled the same as the CS line
 
 #define RETRY_COUNT 10
-
+#define RETRY_DELAY 100
 /*
  *	Brings the SPI circuit select line low (active)
  */
@@ -47,7 +51,7 @@ void spi_init()
 /*
  *	Set SD card to SPI mode brigns card out of idle, sets proper block sizes
  */
-void sd_init()
+char sd_init()
 {
 	int i;
 	spi_init(); // SD card needs SPI working first
@@ -61,12 +65,30 @@ void sd_init()
 	}
 
 
+	// Send CMD0 to enter SPI mode until we get "0x01" back
 	for (i = 0; i < RETRY_COUNT; i++) {
-		if (SD_send_command(0x40, 0x00000000, 0x95, 8)
+		if (sd_send_command(0x40, 0x00000000, 0x95) != 0x01) {
+			break;
+		}
+		_delay_ms(RETRY_DELAY);
+	}
+	if (i == RETRY_COUNT) return -1; // no response. You will not use SD card today
 
-	}	
-
+	// Send CMD1 to come out of idle, retry until we get "0x00" back
+	for (i = 0; i < RETRY_COUNT; i++) {
+		if (sd_send_command(0x41, 0x00000000, 0xFF) != 0x00) {
+			break;
+		}
+		_delay_ms(RETRY_DELAY);
+	}
+	if (i == RETRY_COUNT) return -1; // no response. You will not use SD card today
 	
+	// Send CMD16 to set blocksize to 512 for FAT16
+	sd_send_command(0x50, 0x00000200, 0xFF);
+
+
+	//TODO, whatever sector bookkeeping we need
+	return 0;	
 }
 
 /*
@@ -87,7 +109,7 @@ uint8_t SPI_write_byte(uint8_t byte)
 uint8_t sd_send_command(
 		uint8_t cmd,		// Command
 		uint32_t arg, 		// 32 bit argument
-		uint8_t crc); 		// CRC for cmd and arg
+		uint8_t crc) 		// CRC for cmd and arg
 {
 	uint8_t i;
 	uint8_t response[8];

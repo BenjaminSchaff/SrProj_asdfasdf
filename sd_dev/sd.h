@@ -7,7 +7,7 @@ void cs_enable();
 
 void cs_disable();
 
-void sd_init();
+char sd_init();
 
 uint8_t SPI_write_byte(uint8_t bytes);
 
