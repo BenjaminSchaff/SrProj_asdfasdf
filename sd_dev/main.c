@@ -72,7 +72,7 @@ int main()
 	init();
 
 	while (1) {
-
+/*
 		if (~PINC & (1<<4)) {
 			cs_enable();
 			buf2[0] = SPI_write_byte(0xAA);
@@ -82,7 +82,7 @@ int main()
 		}
 
 		if (~PINC & (1<<5)) {
-			sd_send_command(0x50, 0x00000200, 0xFF, 8, read_buffer);
+			sd_send_command(0x50, 0x00000200, 0xFF);
 
 		}
 
@@ -93,7 +93,7 @@ int main()
 		lcd_puts(lcd_buf);
 
 		
-	
+*/	
 		PORTA ^= (1<<4); // Blinking LEDs are great. Also tells how fast main loop completes.
 		_delay_ms(150);
 
