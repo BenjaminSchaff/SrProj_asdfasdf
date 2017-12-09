@@ -34,7 +34,8 @@ void cs_disable()
 /*
  *	Performes SPI pin and clock initialization
  */
-void spi_init(){
+void spi_init()
+{
 	// Setting up SPI pins
 	DDRB |= (1<<4) | (1<<5) | (1<<7);	// Set CS (PB4), MOSI (PB5),and SCK (PB7) output.  
 	DDRB &= ~(1<<6);	// and MISO (PB6) as input
@@ -44,7 +45,7 @@ void spi_init(){
 }
 
 /*
- *	Brings SD card out of idle, sets proper read/write block sizes
+ *	Set SD card to SPI mode brigns card out of idle, sets proper block sizes
  */
 void sd_init()
 {
@@ -79,15 +80,18 @@ uint8_t SPI_write_byte(uint8_t byte)
 	return SPDR;					// return byte recieved
 }
 
-
-void sd_send_command(
+/*
+ *	Sends to the SD card the given command
+ *	Returns the 1 bytes response
+ */
+uint8_t sd_send_command(
 		uint8_t cmd,		// Command
 		uint32_t arg, 		// 32 bit argument
-		uint8_t crc, 		// CRC for cmd and arg
-		uint8_t read_bytes, // How many bytes to read back
-		uint8_t *read_buf)	// Buffer to store read bytes in
+		uint8_t crc); 		// CRC for cmd and arg
 {
 	uint8_t i;
+	uint8_t response[8];
+
 	cs_enable(); // Begin SPI transmision
 
 	SPI_write_byte(cmd);
@@ -97,10 +101,21 @@ void sd_send_command(
 	SPI_write_byte(arg & 0xFF);			// and LSB
 	SPI_write_byte(crc);
 
-	// read response.
-	for (i = 0; i < read_bytes; i++) {
-		read_buf[i] = SPI_write_byte(0xFF);
+	// read response.  Response comes 0-8 bytes after sending command.
+	// Need to read all 8
+	for (i = 0; i < 8; i++) {
+		response[i] = SPI_write_byte(0xFF);
 	}
-
+	
 	cs_disable(); // End SPI transmission
+	
+	// Find which byte was the response
+	for (i =0; i < 8; i++) {
+		if (response[i] != 0xFF) {
+			return response[i];
+		}
+	}
+	
+	// no response
+	return 0xFF; // basically -1
 }

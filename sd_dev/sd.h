@@ -11,8 +11,14 @@ void sd_init();
 
 uint8_t SPI_write_byte(uint8_t bytes);
 
-void sd_send_command(uint8_t cmd, uint32_t arg, uint8_t crc,
-					 uint8_t read_bytes, uint8_t *read_buf);
+/*
+ *	Sends to the SD card the given command
+ *	Returns the 1 bytes response
+ */
+uint8_t sd_send_command(
+		uint8_t cmd,		// Command
+		uint32_t arg, 		// 32 bit argument
+		uint8_t crc); 		// CRC for cmd and arg
 
 #endif
 
