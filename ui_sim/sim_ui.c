@@ -39,7 +39,7 @@ int main()
 		update_screen_state(button, current_screen, &ui[current_screen]);
 		switch (current_screen) {
 		case 1:
-			update_sensor_strings(&ui[2], &ui[1], buf);
+			update_sensor_strings(&ui[1], &ui[2], buf);
 			break;
 		case 2:
 			update_settings_strings(&ui[2]);

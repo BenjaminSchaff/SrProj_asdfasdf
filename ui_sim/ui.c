@@ -235,10 +235,13 @@ void ui_init(SCREEN ui[3])
 	sprintf(main_menu->lines[1], "Saved Data");
 	sprintf(main_menu->lines[2], "Settings");
 	sprintf(main_menu->lines[3],  " ");
+	sprintf(main_menu->lines[4],  " ");
+	sprintf(main_menu->lines[5],  " ");
+	sprintf(main_menu->lines[6],  " ");
 	//printf("%d, %d \n", sizeof(main_menu->lines), sizeof(main_menu->lines[0]));
 
 	//printf("ASSSSS2\n");
-	main_menu->length = 4;
+	main_menu->length = 7;
 	main_menu->screen_index = 0;
 	main_menu->curser_index = 0;
 	//printf("ASSSSS3\n");
@@ -262,8 +265,8 @@ void ui_init(SCREEN ui[3])
 	//printf("ASSSSS6\n");
 
 	for (i = 0; i < sensor_readouts->length; i++) {
-		sensor_readouts->line_values[i] = i;
-		sensor_readouts->max_values[i] = 6;
+		sensor_readouts->line_values[i] = 0;
+		sensor_readouts->max_values[i] = 0;
 	}
 	//printf("ASSSSS7\n");
 	// initialize setting screen to correct data
