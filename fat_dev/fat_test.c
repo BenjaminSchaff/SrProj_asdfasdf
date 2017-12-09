@@ -21,6 +21,8 @@ uint16_t f16_read(uint16_t count)
 {
 	// TODO, limit size to < 32 or buffer size?
 	return (uint16_t)fread(f16_r_buffer, 1, count, fin); //TODO read from SD
+	
+	// for SD card, will require reading from two sectors, unless limited to only aligned reads.
 }
 
 

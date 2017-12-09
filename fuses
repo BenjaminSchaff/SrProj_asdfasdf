@@ -1,0 +1,16 @@
+BODLEVEL = DISABLED
+OCDEN = [ ]
+JTAGEN = [ ]
+SPIEN = [X]
+WDTON = [ ]
+EESAVE = [ ]
+BOOTSZ = 4096W_7000
+BOOTRST = [ ]
+CKDIV8 = [ ]
+CKOUT = [ ]
+SUT_CKSEL = INTRCOSC_6CK_65MS
+
+EXTENDED = 0xFF (valid)
+HIGH = 0xD9 (valid)
+LOW = 0xE2 (valid)
+
