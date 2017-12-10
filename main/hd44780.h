@@ -24,7 +24,7 @@ Version:   1.11
 #define LCD_DISPLAYMODE         3    // DB3: turn lcd/cursor on
 #define LCD_DISPLAYMODE_ON      2    // DB2: turn display on
 #define LCD_DISPLAYMODE_CURSOR  1    // DB1: turn cursor on
-#define LCD_DISPLAYMODE_BLINK   1    // DB0: blinking cursor
+#define LCD_DISPLAYMODE_BLINK   0    // DB0: blinking cursor
 
 #define LCD_MOVE                4    // DB4: move cursor/display
 #define LCD_MOVE_DISP           3    // DB3: move display (0-> cursor)

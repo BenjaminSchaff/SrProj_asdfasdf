@@ -48,8 +48,17 @@ void update_screen_state(int button, int current_screen_index, SCREEN *current_s
 
 void print_screen(SCREEN *current_screen)
 {
-	int i;
+	int i, j;
+	// remove cursor(s) from screen
+	for (j = 0; j < 4; j++) { // for each line on screen
+		for (i = 0; i < 20; i++) { // for each char in line
+			if (current_screen->lines[current_screen->screen_index + j][i] == '<') { // if cursor
+				current_screen->lines[current_screen->screen_index + j][i] = '\0';	// end string
+			}
+		}
+	}
 
+	// add cursor to correct line
 	for (i = 0; i < 19; i++) {
 		if (current_screen->lines[current_screen->curser_index][i] == '\0')
 			break;

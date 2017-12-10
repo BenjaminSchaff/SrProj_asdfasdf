@@ -53,7 +53,7 @@ int main()
 		print_screen(&ui[current_screen_index]); // update screen
 
 		for (i = 1; i < 7; i++) { // buttons are labeled 1-6
-			if (((~PINC) << (1 + i)) & 0x01) {
+			if (((~PINC) >> (1 + i)) & 0x01) {
 				if (i == 6) { // if the button is back screen, go home
 					current_screen_index = 0; // 0 is the home screen
 				} else if (i == 3) { // if you press the goto screen button
@@ -78,7 +78,7 @@ int main()
 			break;
 		}
 		
-		_delay_ms(950);
+		_delay_ms(550);
 
 		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
 //		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
