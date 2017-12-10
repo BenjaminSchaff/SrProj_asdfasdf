@@ -7,7 +7,7 @@ typedef struct screen_ui {
 	int max_values[7];
 	int length;
 	int screen_index;
-	int curser_index;
+	int cursor_index;
 } SCREEN;
 
 /*

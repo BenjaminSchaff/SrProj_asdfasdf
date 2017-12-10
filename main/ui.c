@@ -26,36 +26,36 @@ void store_settings(SCREEN *settings)
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
 {
 	if (button == 1) { // if the right arrow key is pressed
-		current_screen->line_values[current_screen->curser_index]++; // increment value of line
+		current_screen->line_values[current_screen->cursor_index]++; // increment value of line
 		
 		// check if the line value is overflowed
-		if (current_screen->line_values[current_screen->curser_index] >= current_screen->max_values[current_screen->curser_index])
-			current_screen->line_values[current_screen->curser_index] = 0; // loop back to 0
+		if (current_screen->line_values[current_screen->cursor_index] >= current_screen->max_values[current_screen->cursor_index])
+			current_screen->line_values[current_screen->cursor_index] = 0; // loop back to 0
 
 	} else if (button == 5) { // if the left arrow key is pressed
-		current_screen->line_values[current_screen->curser_index]--; // decrement value of line
+		current_screen->line_values[current_screen->cursor_index]--; // decrement value of line
 
 		// check if the line value goes below 0
-		if (current_screen->line_values[current_screen->curser_index] < 0)
-			current_screen->line_values[current_screen->curser_index] = current_screen->max_values[current_screen->curser_index];
+		if (current_screen->line_values[current_screen->cursor_index] < 0)
+			current_screen->line_values[current_screen->cursor_index] = current_screen->max_values[current_screen->cursor_index];
 
 	} else if (button == 2) { // if the up arrow key is pressed
-		if (current_screen->screen_index == current_screen->curser_index) { // if the curser is at the top of the screen
-			if (current_screen->curser_index != 0) { // if the curser is not
-				current_screen->screen_index--; // decrement both the curser and screen index
-				current_screen->curser_index--;
+		if (current_screen->screen_index == current_screen->cursor_index) { // if the cursor is at the top of the screen
+			if (current_screen->cursor_index != 0) { // if the cursor is not
+				current_screen->screen_index--; // decrement both the cursor and screen index
+				current_screen->cursor_index--;
 			}
-		} else { // if the curser is not at the top of the screen
-			current_screen->curser_index--; // decrement the curser index
+		} else { // if the cursor is not at the top of the screen
+			current_screen->cursor_index--; // decrement the cursor index
 		}
 	} else if (button == 4) { // if the down key is pressed
-		if ((current_screen->screen_index + 3) == current_screen->curser_index) { // if the curser is at the bottom of the screen
-			if (current_screen->curser_index != (current_screen->length + 1)) { // if the curser has not hit the bottom of the list
-				current_screen->screen_index++; // increment screen and curser index
-				current_screen->curser_index++;
+		if ((current_screen->screen_index + 3) == current_screen->cursor_index) { // if the cursor is at the bottom of the screen
+			if (current_screen->cursor_index != (current_screen->length + 1)) { // if the cursor has not hit the bottom of the list
+				current_screen->screen_index++; // increment screen and cursor index
+				current_screen->cursor_index++;
 			}
 		} else {
-			current_screen->curser_index++; // increment curser index
+			current_screen->cursor_index++; // increment cursor index
 		}
 	} 
 
@@ -75,12 +75,12 @@ void print_screen(SCREEN *current_screen)
 
 	// add cursor to correct line
 	for (i = 0; i < 19; i++) {
-		if (current_screen->lines[current_screen->curser_index][i] == '\0')
+		if (current_screen->lines[current_screen->cursor_index][i] == '\0')
 			break;
 	}
 
-	current_screen->lines[current_screen->curser_index][i] = '<';
-	current_screen->lines[current_screen->curser_index][i + 1] = '\0';
+	current_screen->lines[current_screen->cursor_index][i] = '<';
+	current_screen->lines[current_screen->cursor_index][i + 1] = '\0';
 
 	lcd_clrscr();
 	lcd_puts((current_screen->lines)[current_screen->screen_index]);
@@ -91,7 +91,7 @@ void print_screen(SCREEN *current_screen)
 	lcd_goto(0x54);
 	lcd_puts((current_screen->lines)[current_screen->screen_index + 3]);
 
-	switch (current_screen->curser_index - current_screen->screen_index) {
+	switch (current_screen->cursor_index - current_screen->screen_index) {
 	case 0:
 		lcd_home();
 		break;
@@ -275,7 +275,7 @@ void ui_init(SCREEN ui[3])
 
 	main_menu->length = 4;
 	main_menu->screen_index = 0;
-	main_menu->curser_index = 0;
+	main_menu->cursor_index = 0;
 
 	for (i = 0; i < main_menu->length; i++) {
 		main_menu->line_values[i] = 0;
@@ -293,7 +293,7 @@ void ui_init(SCREEN ui[3])
 
 	sensor_readouts->length = 7;
 	sensor_readouts->screen_index = 0;
-	sensor_readouts->curser_index = 0;
+	sensor_readouts->cursor_index = 0;
 
 	for (i = 0; i < sensor_readouts->length; i++) {
 		sensor_readouts->line_values[i] = 0;
@@ -308,7 +308,7 @@ void ui_init(SCREEN ui[3])
 
 	settings->length = 4;
 	settings->screen_index = 0;
-	settings->curser_index = 0;
+	settings->cursor_index = 0;
 
 	// Read initial values from EEPROM, unless a button is held down
 	if ((PINC & 0xFC) == 0xFC) {	// no buttons held down, load

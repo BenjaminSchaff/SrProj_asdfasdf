@@ -91,9 +91,9 @@ int main()
 					current_screen_index = 0; // 0 is the home screen
 				} else if (i == 3) { // if you press the goto screen button
 					if (current_screen_index == 0) { // and you are at the home screen
-						if (ui[0].curser_index == 0) // and your curser is over the sensors option
+						if (ui[0].cursor_index == 0) // and your cursor is over the sensors option
 							current_screen_index = 1; // goto sensors
-						else if (ui[0].curser_index == 2) // and your curser is over the settings option
+						else if (ui[0].cursor_index == 2) // and your cursor is over the settings option
 							current_screen_index = 2; // goto settings
 					}
 				}

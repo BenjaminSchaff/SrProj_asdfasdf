@@ -11,7 +11,7 @@ void debug_print(SCREEN *current_screen)
 	int i;
 
 	for (i = 0; i < 4; i++) {
-		if ((i + current_screen->screen_index) == current_screen->curser_index)
+		if ((i + current_screen->screen_index) == current_screen->cursor_index)
 			printf("%s <-\n", current_screen->lines[i + current_screen->screen_index]);
 		else
 			printf("%s   \n", current_screen->lines[i + current_screen->screen_index]);
