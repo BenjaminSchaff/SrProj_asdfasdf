@@ -241,11 +241,14 @@ long bmp180_calc_true_pres(long u_pres)
 void sensor_init()
 {
 	bmp180_read_calib();
-	SREG |= 0x80; // enable global interrupt bit
-	TCCR1A = 0x00; // don't need any of these
-	TCCR1B = 0x42; // turns off noise cancellation, turns on rising edge detection, positve edge, prescalar = 8
-	TIMSK1 |= (1 << ICIE1); // input capture interrupt enable
-	TIMSK1 |= (1 << TOIE1); // overflow interrupt enable
+
+	// Set up Timer/Counter 1 for use as input capture counter.  
+	// Need overflow and caputure interrupts.
+	SREG |= 0x80;	// Enable global interrupt bit
+	TCCR1A = 0x00;	// No output compare or waveform gen. Overflow flag set at MAX
+	TCCR1B = 0x42;	// Disable noise cancellation, enable rising edge detection,
+						// positve edge, prescalar = 8
+	TIMSK1 |= (1<<ICIE1)|(1<<TOIE1); //  Enable Input capture and Overflow interrupts
 }
 
 void update_sensors()
