@@ -17,17 +17,40 @@
 FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 char lcd_buf[21];
+volatile uint8_t last_button_state = 0;	// For storing last state of the buttons
+volatile uint8_t button_event = 0;		// Flags for button events needing to be processed
+volatile uint8_t since_last_update = 0xFF;	// Flag signalling to update the sensors
+
+// Interrupt for periodic events including querying button state and setting 
+// update sensor/display flag (occurs every 32ms or so)
+ISR(TIMER0_OVF_vect)
+{
+	uint8_t state = (PINC>>1) & 0x7E; // Shift and mask PC2-PC7 to SW1-SW7
+	button_event |= (state^last_button_state)&last_button_state; 
+	// lasti XOR current detects rising/falling edges on any buttons
+	// AND with last narrows it to falling edges only
+	// OR into event to set flag on and for buttons that were pressed.
+
+	last_button_state = state;
+
+	if (since_last_update < 0xFF)
+		since_last_update++;
+}
+
 
 int main() 
 {
 	int current_screen_index = 0;
 	int i;
-	SCREEN ui[3];
+	SCREEN ui[3];	// for storing the state of all ui screens
+
 	/* Initialiation */
 
+
+	// LED config
 	DDRA |= (1<<4); // set PA4 to output (LED blink)
 	
-	// button config
+	// Pushbutton config
 	MCUCR &= ~(1<<PUD); // disable pullup disable
 	DDRC &= ~(0xFC);    // PC2-PC7 set to input
 	PORTC |= (0xFC);    // PC2-PC7 pullup enabled
@@ -37,23 +60,33 @@ int main()
 	MCUCR = (1<<JTD);
 	MCUCR = (1<<JTD);
 
+	// Configuring Timer 0 (TC0) to periodically interrupt for periodically
+	// updating pushbuttons, sensors, and UI
+	SREG |= 0x80; // enable global interrupt bit
+	TCCR0A = 0x00;	// No output compare or waveform gen. Overflow flag set at MAX
+	TCCR0B = 0x05;  // No output compare, no waveform.  Clock = clk/1024
+	TIMSK0 |= (1<<TOIE0);	// Enable timer overflow interrupt
+
+	// Call init routines of other subsystems
 	lcd_init();
-	uart_init();
-	
+//	uart_init();
 	i2c_init();
 	sensor_init();
-
 	ui_init(ui);
 
 	/* End initialization */
 
+	/* Main loop */
 	while (1) {
-		PORTA ^= (1<<4); // Blinking LEDs are great. Also tells how fast main loop completes.
+	//	PORTA ^= (1<<4); // Blinking LEDs are great. Also tells how fast main loop completes.
 
-		print_screen(&ui[current_screen_index]); // update screen
 
+
+		// Processing button input
 		for (i = 1; i < 7; i++) { // buttons are labeled 1-6
-			if (((~PINC) >> (1 + i)) & 0x01) {
+			if (button_event & (1<<i)) { // if that button was pressed
+				button_event &= ~(1<<i); // clear event flag
+
 				if (i == 6) { // if the button is back screen, go home
 					current_screen_index = 0; // 0 is the home screen
 				} else if (i == 3) { // if you press the goto screen button
@@ -68,22 +101,25 @@ int main()
 				break;
 			}
 		}
-		update_sensors();
-		switch (current_screen_index) {
-		case 1:
-			update_sensor_strings(&ui[1], &ui[2], lcd_buf);
-			break;
-		case 2:
-			update_settings_strings(&ui[2]);
-			break;
-		}
-		
-		_delay_ms(550);
+		if (since_last_update > 20) {	// update sensors/display
+			since_last_update = 0;	// clear counter
 
-		//fprintf(&uart_strm, "Temperature: %f C\n", f_temp);
-//		fprintf(&uart_strm, "T: %d.%dC\n", c_temp/10, c_temp%10);
-	//	fprintf(&uart_strm, "H: %d.%d%%\n", c_humid/10, c_humid%10);
-//		fprintf(&uart_strm, "T2: %ld\n", bmp180_T);
-//		fprintf(&uart_strm, "P: %ld\n", bmp180_P);	
+			print_screen(&ui[current_screen_index]); // update screen
+			update_sensors();	// Get new values from sensors
+
+			// Update UI/display with new sensor data
+			switch (current_screen_index) {
+			case 1:
+				update_sensor_strings(&ui[1], &ui[2], lcd_buf);
+				break;
+			case 2:
+				update_settings_strings(&ui[2]);
+				break;
+			}
+			
+			// Toggle LED every update cycle
+			PORTA ^= (1<<4);
+		}			
+//		_delay_ms(550);
 	}
 }
