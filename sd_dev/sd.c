@@ -8,8 +8,8 @@
 
 #define SD_DEBUG // if defined, PA4 is toggled the same as the CS line
 
-#define RETRY_COUNT 10
-#define RETRY_DELAY 100
+#define RETRY_COUNT 100
+#define RETRY_DELAY 10
 /*
  *	Brings the SPI circuit select line low (active)
  */
@@ -45,7 +45,8 @@ void spi_init()
 	DDRB &= ~(1<<6);	// and MISO (PB6) as input
 	PORTB |= (1<<6);	// Pullup on MISO	
 	// Enable SPI, master mode, 
-	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR0) | (SPR1);
+	//SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR0) | (1<<SPR1);
+	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR1);
 }
 
 /*
@@ -54,6 +55,8 @@ void spi_init()
 char sd_init()
 {
 	int i;
+	uint8_t ret;
+
 	spi_init(); // SD card needs SPI working first
 
 
@@ -67,21 +70,53 @@ char sd_init()
 
 	// Send CMD0 to enter SPI mode until we get "0x01" back
 	for (i = 0; i < RETRY_COUNT; i++) {
-		if (sd_send_command(0x40, 0x00000000, 0x95) != 0x01) {
+		if (sd_send_command(0x40, 0x00000000, 0x95) == 0x01) { // needs valid crc (or not)
 			break;
 		}
 		_delay_ms(RETRY_DELAY);
 	}
 	if (i == RETRY_COUNT) return -1; // no response. You will not use SD card today
 
-	// Send CMD1 to come out of idle, retry until we get "0x00" back
+
+	// Send CMD 8
 	for (i = 0; i < RETRY_COUNT; i++) {
-		if (sd_send_command(0x41, 0x00000000, 0xFF) != 0x00) {
+		ret = sd_send_command(0x40|8, 0x00000000, 0xFF); // doesn't need valid crc
+		if (ret != 0xFF) {
 			break;
 		}
 		_delay_ms(RETRY_DELAY);
 	}
-	if (i == RETRY_COUNT) return -1; // no response. You will not use SD card today
+
+	// ACMD41 = CMD55 (0x77) and then CMD41	(0x69)
+	// Send ACMD41 to come out of idle, retry until we get "0x00" back
+	for (i = 0; i < RETRY_COUNT; i++) {
+		ret = sd_send_command(0x40|55, 0x00000000, 0xFF); // doesn't need valid crc
+		ret = sd_send_command(0x40|41, 0x40000000, 0xFF); // doesn't need valid crc
+		if (ret == 0x00) {
+			break;
+		}
+		_delay_ms(RETRY_DELAY);
+	}
+	
+	//return ret;
+
+	
+	// Send CMD1 to come out of idle, retry until we get "0x00" back
+	for (i = 0; i < RETRY_COUNT; i++) {
+		ret = sd_send_command(0x41, 0x00000000, 0xFF); // doesn't need valid crc
+		if (ret == 0x00) {
+			break;
+		}
+		_delay_ms(RETRY_DELAY);
+	}
+	if (i == RETRY_COUNT) return ret; //-2; // no response. You will not use SD card today
+	/*	
+	do {
+		ret = sd_send_command(0x41, 0x00000000, 0xFF); // doesn't need valid crc
+	} while (ret == 0x01);
+	return ret;
+*/
+
 	
 	// Send CMD16 to set blocksize to 512 for FAT16
 	sd_send_command(0x50, 0x00000200, 0xFF);
