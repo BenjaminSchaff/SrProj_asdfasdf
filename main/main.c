@@ -18,43 +18,34 @@ FILE uart_strm = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
 
 char lcd_buf[21];
 
-void sensor_readout_update()
-{
-	int16_t temp = get_temp();
-	unsigned long pressure = get_pressure();
-	unsigned int wind = get_wind();
-	uint16_t humid = get_humid();
-
-	sprintf(buf, "Temp: %d.%d C", temp/10, abs(temp%10)); // convert temp to a string
-	lcd_puts(buf); // print temperature to first line of screen
-
-	lcd_goto(0x40); // goto next line
-	sprintf(buf, "Pres: %lu.%lu hPa", pressure/100, pressure%100); // convert pressure to a string
-	lcd_puts(buf); // print pressure to second line of lcd
-
-	lcd_goto(0x14);
-	sprintf(buf, "Speed: %u.%u mph", wind/10, wind%10);
-	lcd_puts(buf);
-}
-
-
-void init()
-{
-	DDRA |= (1<<4); // set PA4 to output (LED blink)
-	lcd_init();
-	uart_init();
-	i2c_init();
-	sensor_init();
-}
-
 int main() 
 {
-	int button, current_screen_index = 0;
+	int current_screen_index = 0;
 	int i;
 	SCREEN ui[3];
+	/* Initialiation */
 
-	init();
+	DDRA |= (1<<4); // set PA4 to output (LED blink)
+	
+	// button config
+	MCUCR &= ~(1<<PUD); // disable pullup disable
+	DDRC &= ~(0xFC);    // PC2-PC7 set to input
+	PORTC |= (0xFC);    // PC2-PC7 pullup enabled
+	// Disable JTAG so PORTC works.  Twice, just to be sure.
+	MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
+	MCUCR = (1<<JTD);
+
+	lcd_init();
+	uart_init();
+	
+	i2c_init();
+	sensor_init();
+
 	ui_init(ui);
+
+	/* End initialization */
 
 	while (1) {
 		PORTA ^= (1<<4); // Blinking LEDs are great. Also tells how fast main loop completes.
@@ -66,14 +57,14 @@ int main()
 				if (i == 6) { // if the button is back screen, go home
 					current_screen_index = 0; // 0 is the home screen
 				} else if (i == 3) { // if you press the goto screen button
-					if (current_screen == 0) { // and you are at the home screen
+					if (current_screen_index == 0) { // and you are at the home screen
 						if (ui[0].curser_index == 0) // and your curser is over the sensors option
 							current_screen_index = 1; // goto sensors
 						else if (ui[0].curser_index == 2) // and your curser is over the settings option
 							current_screen_index = 2; // goto settings
 					}
 				}
-				update_screen_state(i, current_screen, &ui[current_screen_index]); // update screens with new values
+				update_screen_state(i, current_screen_index, &ui[current_screen_index]); // update screens with new values
 				break;
 			}
 		}
