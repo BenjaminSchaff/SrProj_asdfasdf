@@ -98,6 +98,11 @@ int main()
 					}
 				}
 				update_screen_state(i, current_screen_index, &ui[current_screen_index]); // update screens with new values
+				// if on settings screen, and l/r button pressed, save settings
+				if ((current_screen_index == 2) && ((i == 1)||(i ==5))) {
+					store_settings(&ui[2]);	// Stores settings to EEPROM
+				}
+				
 				break;
 			}
 		}

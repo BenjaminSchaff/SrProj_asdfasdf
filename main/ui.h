@@ -10,6 +10,11 @@ typedef struct screen_ui {
 	int curser_index;
 } SCREEN;
 
+/*
+ * Saves the settings values to EEPROM
+ */
+void store_settings(SCREEN *settings);
+
 void print_screen(SCREEN *current_screen);
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen);
 void update_screen_text(SCREEN *current_screen);

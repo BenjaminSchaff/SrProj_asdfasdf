@@ -3,11 +3,25 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <avr/eeprom.h>
 
 #include "ui.h"
 #include "hd44780_settings.h"
 #include "hd44780.h"
 #include "sensors.h"
+
+int EEMEM EEPROM_settings_values[7];
+
+/*
+ * Saves the settings values to EEPROM
+ */
+void store_settings(SCREEN *settings)
+{	
+	eeprom_write_block(
+			(const void *)(settings->line_values), 
+			(void *)EEPROM_settings_values, 
+			sizeof(int)*7);
+}
 
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
 {
@@ -44,6 +58,7 @@ void update_screen_state(int button, int current_screen_index, SCREEN *current_s
 			current_screen->curser_index++; // increment curser index
 		}
 	} 
+
 }
 
 void print_screen(SCREEN *current_screen)
@@ -232,7 +247,7 @@ char *get_dew_point_string(char ret[21])
 {
     int16_t dew_point = get_dew_point();
     sprintf(ret, "Dew Point: %d C", dew_point);
-
+	// TODO, make use saved temp unit
     return ret;
 }
 
@@ -240,7 +255,7 @@ char *get_humidex_string(char ret[21])
 {
     int16_t humidex = get_humidex();
     sprintf(ret, "Humidex: %d C", humidex);
-
+	// TODO make use saved temp unit
     return ret;
 }
 
@@ -295,8 +310,16 @@ void ui_init(SCREEN ui[3])
 	settings->screen_index = 0;
 	settings->curser_index = 0;
 
-	for (i = 0; i < settings->length; i++)
-		settings->line_values[i] = 0;
+	// Read initial values from EEPROM, unless a button is held down
+	if ((PINC & 0xFC) == 0xFC) {	// no buttons held down, load
+		eeprom_read_block(
+				(void *)(settings->line_values), 
+				(const void *)EEPROM_settings_values, 
+				sizeof(int)*7);
+	} else {	// Button pressed, reset
+		for (i = 0; i < settings->length; i++) // Set to zero
+			settings->line_values[i] = 0;
+	}
 
 	settings->max_values[0] = 1;
 	settings->max_values[1] = 2;
