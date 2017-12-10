@@ -18,9 +18,9 @@
 
 char lcd_buf[21];	// LCD write buffer
 
-volatile uint8_t last_button_state = 0;		// For storing last state of the buttons
-volatile uint8_t button_event = 0;			// Flags for button events needing to be processed
-volatile uint8_t since_last_update = 0xFF;	// Flag signalling to update the sensors
+volatile uint8_t last_button_state = 0;		// Last state of the buttons
+volatile uint8_t button_event = 0;			// Button event flags to process
+volatile uint8_t since_last_update = 0xFF;	// Flag to update the sensors
 
 // Interrupt for periodic events including querying button state and setting 
 // update sensor/display flag (occurs every 32ms or so)
