@@ -48,6 +48,8 @@ void update_screen_state(int button, int current_screen_index, SCREEN *current_s
 
 void print_screen(SCREEN *current_screen)
 {
+	current_screen->lines[current_screen->curser_index][19] = '<';
+
 	lcd_clrscr();
 	lcd_puts((current_screen->lines)[current_screen->screen_index]);
 	lcd_goto(0x40);
