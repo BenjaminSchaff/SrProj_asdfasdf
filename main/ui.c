@@ -215,7 +215,7 @@ char *get_wind_string(SCREEN *settings, char ret[21])
 char *get_humidity_string(char ret[21])
 {
 	uint16_t humid = get_humid();
-	sprintf(ret, "Humidity: %u%% RH", humid);
+	sprintf(ret, "Humidity: %u.%u%% RH", humid/10, humid%10);
 
 	return ret;
 }
