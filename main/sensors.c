@@ -61,52 +61,73 @@ int16_t c_humidex;
 
 
 /*** Sensor read functions ***/
-// Returns most recently measured temperature, in 0.1 C
+
+/*!
+ * Returns most recently measured temperature in 0.1 degree celcius
+ */
 int16_t get_temp()
 {
 	return c_temp;
 }
 
-
-// Returns most recently measured humidity, in 0.1%
+/*!
+ * Returns most recently measured humidity, in 0.1% RH
+ */
 uint16_t get_humid()
 {
 	return c_humid;
 }
 
-
-// Returns most recently measured pressure, in pascals
+/*!
+ * Returns most recently measured pressure, in pascals
+ */
 unsigned long get_pressure()
 {
 	return bmp180_P;
 }
 
-// Returns most recently measured wind speed, in 0.1 mph 
+/*!
+ * Returns most recently measured wind speed, in 0.1 mph
+ */
 unsigned int get_wind()
 {
 	return (avg_wind_freq*10)/wind_freq_divider;
 }
 
+/*!
+ * Returns calculated dew point in 0.1 degress celcius
+ */
 int16_t get_dew_point()
 {
 	return c_dew_point;
 }
 
+/*!
+ * Returns calculated humidex in 0.1 degrees celcius
+ */
 int16_t get_humidex()
 {
 	return c_humidex;
 }
 
+/*!
+ * Returns calculated wind chill in 0.1 degrees celcius
+ */
 int16_t get_wind_chill()
 {
 	return c_wind_chill;
 }
 
+/*!
+ * Returns calculated wind chill in 0.1 degrees celcius
+ */
 uint64_t get_time()
 {
+	//TODO Install an RTC and actually impliment this
 	static uint64_t time = 0;
 	return time++;
 }
+
 
 // Anemometer input capture counter
 ISR(TIMER1_CAPT_vect)
@@ -129,8 +150,7 @@ ISR(TIMER1_OVF_vect)
 	n_overflows++;
 }
 
-
-
+// Private function, used by init
 void bmp180_read_calib(void) 
 {
 	i2c_start();
@@ -154,6 +174,7 @@ void bmp180_read_calib(void)
 	i2c_stop();
 }
 
+// used by update sensors to read from bmp180
 void bmp180_read_u_temp(void)
 {
 	// trigger temp start
@@ -174,6 +195,7 @@ void bmp180_read_u_temp(void)
 	i2c_stop();
 }
 
+// used by update sensors to read from bmp180
 //TODO break this into separate start and read functions, and read returns UP
 void bmp180_read_u_pres(void)
 {
@@ -196,7 +218,7 @@ void bmp180_read_u_pres(void)
 	i2c_stop();
 }
 
-
+// used by update sensors to calulate calibrated temperature
 long bmp180_calc_true_temp(long u_temp)
 {
 	long X1, X2, T;
@@ -209,7 +231,7 @@ long bmp180_calc_true_temp(long u_temp)
 	return T;
 }
 
-
+// used by update sensors to calculate calibrated pressure
 long bmp180_calc_true_pres(long u_pres)
 {
 	// from datasheet.
@@ -237,7 +259,9 @@ long bmp180_calc_true_pres(long u_pres)
 	return P;
 }
 
-
+/*!
+ * Performs sensor initialization, requires i2c to be initialized.
+ */
 void sensor_init()
 {
 	bmp180_read_calib();
@@ -251,6 +275,9 @@ void sensor_init()
 	TIMSK1 |= (1<<ICIE1)|(1<<TOIE1); //  Enable Input capture and Overflow interrupts
 }
 
+/*!
+ * Starts measurements on i2c sensors and updates saved measurements.
+ */
 void update_sensors()
 {
 	int i;

@@ -4,24 +4,54 @@
 
 #include <stdint.h>
 
-void sensor_init();	// performs sensor initialization
+/*!
+ * Performs sensor initialization, requires i2c to be initialized.
+ */
+void sensor_init();	
 
-void update_sensors(); // starts measurements on i2c sensors
+/*!
+ * Starts measurements on i2c sensors and updates saved measurements.
+ */
+void update_sensors();
 
-int16_t get_temp(); // returns temperature in 0.1 degree celcius
+/*!
+ * Returns most recently measured temperature in 0.1 degree celcius
+ */
+int16_t get_temp();
 
-uint16_t get_humid(); // returns humidity, in 0.1%
+/*!
+ * Returns most recently measured humidity, in 0.1% RH
+ */
+uint16_t get_humid();
 
-unsigned long get_pressure(); // returns pressure, in pascals
+/*!
+ * Returns most recently measured pressure, in pascals
+ */
+unsigned long get_pressure();
 
-unsigned int get_wind(); // returns wind speed, in 0.1 mph)
+/*!
+ * Returns most recently measured wind speed, in 0.1 mph
+ */
+unsigned int get_wind();
 
-uint64_t get_time(); // returns the current times (64bit unit time)
+/*!
+ * Returns the current time (64bit unit time)
+ */
+uint64_t get_time(); 
 
-int16_t get_wind_chill(); // returns wind chill in 0.1 degrees celcius
+/*!
+ * Returns calculated wind chill in 0.1 degrees celcius
+ */
+int16_t get_wind_chill();
 
-int16_t get_dew_point(); // returns dew point in 0.1 degress celcius
+/*!
+ * Returns calculated dew point in 0.1 degress celcius
+ */
+int16_t get_dew_point();
 
-int16_t get_humidex(); // returns humidex
+/*!
+ * Returns calculated humidex in 0.1 degrees celcius
+ */
+int16_t get_humidex();
 
 #endif
