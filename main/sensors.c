@@ -306,7 +306,7 @@ void update_sensors()
 	c_temp = (((int32_t)(temp) * 1650) / 65536 - 400) + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 	c_dew_point = c_temp - (100 - (c_humid / 10)) / 5; // calculate dewpoint
-	c_humidex = c_temp + 0.5555 * (6.11 * exp(5417.7530 * (1/273.10 - 1/(273.15 + c_dew_point))) - 10);
+	c_humidex = c_temp + 0.5555 * (6.11 * exp(5417.7530 * (1/273.10 - 1/(273.15 + (c_dew_point / 10)))) - 10);
 
 	// trigger measurement
 	i2c_start();
