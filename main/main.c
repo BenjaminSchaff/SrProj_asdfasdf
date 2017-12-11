@@ -1,3 +1,14 @@
+/*!
+ * @file main.c
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * The main avr program for the asdfasdf.  Reads values from various sensors
+ * displays them on an LCD.  Takes in user input via pushbuttons to navigate 
+ * change menus and change ettings such as units or values displayed.
+ *
+ */
+
 #include "defines.h"
 
 #include <stdio.h>
