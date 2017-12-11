@@ -15,6 +15,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <util/twi.h>
+#include <math.h>
 
 #include "sensors.h"
 #include "i2c.h"
@@ -305,8 +306,7 @@ void update_sensors()
 	c_temp = (((int32_t)(temp) * 1650) / 65536 - 400) + t_offset;
 	c_humid = ((uint32_t)(humid) * 1000) / 65536;
 	c_dew_point = c_temp - (100 - c_humid) / 5; // calculate dewpoint
-	c_wind_chill = c_temp; // TODO Make this do something
-	c_humidex = c_temp; // TODO this too
+	c_humidex = c_temp + 0.5555 * (6.11 * exp(5417.7530 * (1/273.10 - 1/(273.15 + c_dew_point))) - 10);
 
 	// trigger measurement
 	i2c_start();
@@ -331,7 +331,7 @@ void update_sensors()
 	// convert to frequency from period
 	avg_wind_freq = 1000000/avg_wind_freq;
 
-
+	c_wind_chill = 13.12 + 0.6215 * c_temp - 11.37 * pow(get_wind(), 0.16) + 0.3965 * c_temp * pow(get_wind(), 0.16); // TODO Make this do something
 	bmp180_T = bmp180_calc_true_temp(UT);
 	bmp180_P = bmp180_calc_true_pres(UP) + p_offset;	
 }
