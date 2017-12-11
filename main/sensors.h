@@ -1,4 +1,13 @@
-// file sensors.h
+/*!
+ * @file sensors.h
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * Functions for reading values from the sensors on the asdfasdf.
+ * Sensors include i2c: bmp180 and hdc1080, and optical anemometer.
+ *
+ */
+
 #ifndef asdfasdf_sense
 #define asdfasdf_sense
 
