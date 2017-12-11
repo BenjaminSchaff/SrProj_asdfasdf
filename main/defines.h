@@ -1,4 +1,12 @@
-// file defines.h
+/*!
+ * @file defines.c
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * Definitions used across multiple c files associated with asdfasdf.
+ *
+ */
+
 #ifndef asdfasdf_defines
 #define asdfasdf_defines
 
