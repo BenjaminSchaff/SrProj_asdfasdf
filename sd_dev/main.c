@@ -1,3 +1,11 @@
+/*! 
+ * @file sd_dev.c
+ * 
+ * @author Dan Paradis and Ben Schaff
+ * 
+ * Program for testing code to communicate with SD card using the AVR
+ *
+ */
 #include "defines.h"
 
 #include <stdio.h>
@@ -68,7 +76,6 @@ void init()
 
 
 	do_sd_init();
-
 }
 
 

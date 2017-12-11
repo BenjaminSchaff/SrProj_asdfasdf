@@ -1,3 +1,12 @@
+/*! 
+ * @file sd.c
+ * 
+ * @author Dan Paradis and Ben Schaff
+ * 
+ * Functions needed to communicate with SD card using the AVR through SPI.
+ * (Still in developement.  SD Init function not functional in testing)
+ *
+ */
 #include "defines.h"
 
 #include <stdlib.h>
@@ -10,8 +19,9 @@
 
 #define RETRY_COUNT 100
 #define RETRY_DELAY 10
-/*
- *	Brings the SPI circuit select line low (active)
+
+/*!
+ * Brings the SPI circuit select line low (active)
  */
 void cs_enable()
 {
@@ -23,8 +33,8 @@ void cs_enable()
 
 }
 
-/*
- *	Brings the SPI circuit select line high (inactive)
+/*!
+ * Brings the SPI circuit select line high (inactive)
  */
 void cs_disable()
 {
@@ -35,8 +45,8 @@ void cs_disable()
 #endif
 }
 
-/*
- *	Performes SPI pin and clock initialization
+/*!
+ * Performes SPI pin and clock initialization
  */
 void spi_init()
 {
@@ -49,8 +59,8 @@ void spi_init()
 	SPCR = (1<<SPE) | (1<<MSTR) | (1<<SPR1);
 }
 
-/*
- *	Set SD card to SPI mode brigns card out of idle, sets proper block sizes
+/*!
+ * Set SD card to SPI mode brigns card out of idle, sets proper block sizes
  */
 char sd_init()
 {
@@ -126,7 +136,7 @@ char sd_init()
 	return 0;	
 }
 
-/*
+/*!
  *	Sends a byte out over the spi bus and returns the bytes recieved.
  * 	Blocks until tranmission completes.
  */
@@ -137,7 +147,7 @@ uint8_t SPI_write_byte(uint8_t byte)
 	return SPDR;					// return byte recieved
 }
 
-/*
+/*!
  *	Sends to the SD card the given command
  *	Returns the 1 bytes response
  */
