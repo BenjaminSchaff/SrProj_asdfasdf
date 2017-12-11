@@ -1,5 +1,5 @@
 /*!
- * @file defines.c
+ * @file defines.h
  *
  * @author Dan Paradis and Ben Schaff
  *

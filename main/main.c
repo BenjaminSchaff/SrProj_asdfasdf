@@ -5,7 +5,7 @@
  *
  * The main avr program for the asdfasdf.  Reads values from various sensors
  * displays them on an LCD.  Takes in user input via pushbuttons to navigate 
- * change menus and change ettings such as units or values displayed.
+ * change menus and change settings such as units or values displayed.
  *
  */
 

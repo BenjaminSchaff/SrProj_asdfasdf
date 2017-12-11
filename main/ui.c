@@ -1,3 +1,13 @@
+/*!
+ * @file ui.c
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * Functions to setup a basic user interface for showing sensor readigns 
+ * and allowing the user to change settings such as units or values displayed.
+ *
+ */
+
 #include "defines.h"
 
 #include <avr/io.h>
@@ -12,7 +22,7 @@
 
 int EEMEM EEPROM_settings_values[7];
 
-/*
+/*!
  * Saves the settings values to EEPROM
  */
 void store_settings(SCREEN *settings)
@@ -23,6 +33,9 @@ void store_settings(SCREEN *settings)
 			sizeof(int)*7);
 }
 
+/*!
+ * Updates the state of the screen based on current screen and button input.
+ */
 void update_screen_state(int button, int current_screen_index, SCREEN *current_screen)
 {
 	if (button == 1) { // if the right arrow key is pressed
@@ -58,9 +71,11 @@ void update_screen_state(int button, int current_screen_index, SCREEN *current_s
 			current_screen->cursor_index++; // increment cursor index
 		}
 	} 
-
 }
 
+/*!
+ * Updates the LCD with the current screen.
+ */
 void print_screen(SCREEN *current_screen)
 {
 	int i, j;
@@ -107,6 +122,9 @@ void print_screen(SCREEN *current_screen)
 	}
 }
 
+/*!
+ * Updates the settings screen strings based on current settings.
+ */
 void update_settings_strings(SCREEN *s)
 {
 	switch (s->line_values[0]) { // check what value temp is
@@ -131,8 +149,8 @@ void update_settings_strings(SCREEN *s)
 	}
 
 	switch (s->line_values[2]) { // check what value wind should be
-	case 0:
-		sprintf(s->lines[2], "Wind Units: MPH"); // pick mph, kph, m/s, or ft/s depending on the value
+	case 0:		// pick mph, kph, m/s, or ft/s depending on the value
+		sprintf(s->lines[2], "Wind Units: MPH"); 
 		break;
 	case 1:
 		sprintf(s->lines[2], "Wind Units: KPH");
@@ -156,6 +174,9 @@ void update_settings_strings(SCREEN *s)
 	}
 }
 
+/*!
+ * Updates the sensors screen strings based on current measurements.
+ */
 void update_sensor_strings(SCREEN *sensors, SCREEN *settings, char ret[21])
 {
 	sprintf(sensors->lines[0], get_temp_string(settings, ret));
@@ -167,30 +188,34 @@ void update_sensor_strings(SCREEN *sensors, SCREEN *settings, char ret[21])
 	sprintf(sensors->lines[6], get_humidex_string(ret));
 }
 
-/* Changes units for temperature in accordance to what the settings say        */
-/* Returns the string that should be saved in the sensor screen's lines array */
+/*!
+ * Changes units for temperature in accordance to what the settings say.
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_temp_string(SCREEN *settings, char ret[21])
 {
 	int16_t temp = get_temp();
 
 	if (settings->line_values[0] == 0) { // if temp setting says to use Fahrenheit
-		sprintf(ret, "Temp: %d.%d C", temp/10, abs(temp%10)); // convert temp to a string
-	} else { // Temp units should be in Fahrenheit
-		temp = (temp * 9)/5 + 320; // convert temp to fahrenheit
-		sprintf(ret, "Temp: %d.%d F", temp/10, abs(temp%10));
+		sprintf(ret, "Temp: %d.%d C", temp/10, abs(temp%10)); // write string
+	} else { 						// Temp units should be in Fahrenheit
+		temp = (temp * 9)/5 + 320;	// convert temp to fahrenheit
+		sprintf(ret, "Temp: %d.%d F", temp/10, abs(temp%10)); // write string
 	}
 
 	return ret;
 }
 
-/* Changes units for pressure in accordance to what the settings say          */
-/* Returns the string that should be saved in the sensor screen's lines array */
+/*!
+ * Changes units for pressure in accordance to what the settings say.
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_pressure_string(SCREEN *settings, char ret[21])
 {
 	unsigned long pressure = get_pressure();
 
 	if (settings->line_values[1] == 0) { // if setting is 0 use hPa as unit
-		sprintf(ret, "Pres: %lu.%lu hPa", pressure/100, pressure%100); // print to ret, the pressure in hPa
+		sprintf(ret, "Pres: %lu.%lu hPa", pressure/100, pressure%100); //write string
 	} else if (settings->line_values[1] == 1) {
 		pressure = (pressure * 10) / 6894 ; // convert to psi
 		sprintf(ret, "Pres: %lu.%lu psi", pressure/10, pressure%10);
@@ -205,8 +230,10 @@ char *get_pressure_string(SCREEN *settings, char ret[21])
 	return ret;
 }
 
-/* Changes units for wind speed in accordance to what the settings say        */
-/* Returns the string that should be saved in the sensor screen's lines array */
+/*!
+ * Changes units for wind speed in accordance to what the settings say.
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_wind_string(SCREEN *settings, char ret[21])
 {
 	unsigned int wind = get_wind();
@@ -227,6 +254,9 @@ char *get_wind_string(SCREEN *settings, char ret[21])
 	return ret;
 }
 
+/*!
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_humidity_string(char ret[21])
 {
 	uint16_t humid = get_humid();
@@ -235,30 +265,42 @@ char *get_humidity_string(char ret[21])
 	return ret;
 }
 
+/*!
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_wind_chill_string(char ret[21])
 {
 	int16_t wind_chill = get_wind_chill();
-	sprintf(ret, "Wind Chill: %d C", wind_chill);
+	sprintf(ret, "Wind Chill: %d.%d C", wind_chill/10, abs(wind_chill%10));
 
 	return ret;
 }
 
+/*!
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_dew_point_string(char ret[21])
 {
     int16_t dew_point = get_dew_point();
-    sprintf(ret, "Dew Point: %d C", dew_point);
+    sprintf(ret, "Dew Point: %d.%d C", dew_point/10, abs(dew_point%10));
 	// TODO, make use saved temp unit
     return ret;
 }
 
+/*!
+ * Returns the string that should be saved in the sensor screen's lines array.
+ */
 char *get_humidex_string(char ret[21])
 {
     int16_t humidex = get_humidex();
-    sprintf(ret, "Humidex: %d C", humidex);
+    sprintf(ret, "Humidex: %d.%d C", humidex/10, abs(humidex%10));
 	// TODO make use saved temp unit
     return ret;
 }
 
+/*!
+ * Initializes UI structs for main menu, settings, and sensors screens.
+ */
 void ui_init(SCREEN ui[3])
 {
 	int i;
@@ -319,6 +361,7 @@ void ui_init(SCREEN ui[3])
 	} else {	// Button pressed, reset
 		for (i = 0; i < settings->length; i++) // Set to zero
 			settings->line_values[i] = 0;
+		store_settings(settings); // Saved zeroed settings to EEPROM
 	}
 
 	settings->max_values[0] = 1;
