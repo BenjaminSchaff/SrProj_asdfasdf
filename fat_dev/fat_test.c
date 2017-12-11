@@ -1,3 +1,14 @@
+/*!
+ * @file fat_test.c
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * Test program for fat16 filesystem functions.
+ * Reads a block of data from a file on a disk image containing a valid 
+ * FAT16 filesystem.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -76,4 +87,3 @@ int main(int argc, char **argv) {
 	fclose(fin);
 	return 0;
 }
-

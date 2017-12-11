@@ -1,4 +1,16 @@
-// file f16_fs.c
+/*!
+ * @file f16_ds.c
+ *
+ * @author Dan Paradis and Ben Schaff
+ *
+ * Functions for implimenting a FAT16 filesystem.
+ *
+ * Functional to a limited capacity.  Does not support files larger than
+ * one cluster (64kB), files in subdirectories, or creating new files,
+ * or modifying the size of files.
+ *
+ */
+
 #define DEBUG
 
 #include <stdlib.h>
@@ -9,6 +21,7 @@
 
 #include "f16_fs.h"
 
+// structure of a fat16 partiotion table
 struct f16_part_table { // sizeof()=16B
 	uint8_t first_byte;
 	uint8_t start_chs[3];
@@ -18,7 +31,7 @@ struct f16_part_table { // sizeof()=16B
 	uint32_t length_sectors;
 } __attribute((packed));
 
-
+// structure of fat16 bootsector
 struct f16_boot_sector { //sizeof()=24B
 	//uini8_t jmp[3];
 	//char oem[8];
@@ -48,7 +61,7 @@ struct f16_boot_sector { //sizeof()=24B
 	*/
 } __attribute((packed));
 
-
+// structure of fat16 file
 struct f16_file { // sizeof()=32B
 	uint8_t filename[11];
 	uint8_t attri;
@@ -132,6 +145,15 @@ int f16_init()
 	return 0;
 }
 
+
+/*!
+ * Opens the file of the given name in the directory.
+ * Return 0 on success, -1 on file not found
+ *
+ * Read pointer should be at start of directory.
+ * Filename must match the padded 8+3 format on disk,
+ * eg log.txt becomes "LOG     TXT"
+ */
 void f16_seek_file(uint32_t position)
 {
 	//TODO traverses FAT for current file to specified position
@@ -150,12 +172,13 @@ void f16_seek_file(uint32_t position)
 }
 
 
-/* 
- * Read pointer should be at start of 
- * Opens the file with the given name.
- * Filename must match the padded 8+3 format on disk, 
- * eg log.txt becomes "LOG     TXT"
+/*!
+ * Opens the file of the given name in the directory.
  * Return 0 on success, -1 on file not found
+ *
+ * Read pointer should be at start of directory.
+ * Filename must match the padded 8+3 format on disk,
+ * eg log.txt becomes "LOG     TXT"
  */
 int f16_open_file(char *filename)
 {
@@ -216,6 +239,11 @@ int f16_open_file(char *filename)
 }
 
 
+/*!
+ * Reads specified number of bytes from the current open file into read buffer.
+ * Read head is moved to end of data read.
+ * Returns number of bytes read.
+ */
 uint16_t f16_read_file(uint16_t bytes)
 {
 	// check end of file
