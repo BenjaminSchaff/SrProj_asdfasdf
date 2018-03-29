@@ -179,13 +179,13 @@ void update_settings_strings(SCREEN *s)
  */
 void update_sensor_strings(SCREEN *sensors, SCREEN *settings, char ret[21])
 {
-	sprintf(sensors->lines[0], get_temp_string(settings, ret));
-	sprintf(sensors->lines[1], get_pressure_string(settings, ret));
-	sprintf(sensors->lines[2], get_wind_string(settings, ret));
-	sprintf(sensors->lines[3], get_humidity_string(ret));
-	sprintf(sensors->lines[4], get_wind_chill_string(ret));
-	sprintf(sensors->lines[5], get_dew_point_string(ret));
-	sprintf(sensors->lines[6], get_humidex_string(ret));
+	sprintf(sensors->lines[0], "%s", get_temp_string(settings, ret));
+	sprintf(sensors->lines[1], "%s", get_pressure_string(settings, ret));
+	sprintf(sensors->lines[2], "%s", get_wind_string(settings, ret));
+	sprintf(sensors->lines[3], "%s", get_humidity_string(ret));
+	sprintf(sensors->lines[4], "%s", get_wind_chill_string(ret));
+	sprintf(sensors->lines[5], "%s", get_dew_point_string(ret));
+	sprintf(sensors->lines[6], "%s", get_humidex_string(ret));
 }
 
 /*!
