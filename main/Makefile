@@ -7,7 +7,7 @@ MCU=atmega644p
 
 PORT=$(shell pavr2cmd --prog-port)
 
-CFLAGS=-g -Wall -mcall-prologues -mmcu=$(MCU) -Os
+CFLAGS=-g -Wall -mcall-prologues -mmcu=$(MCU) -Os -std=c99
 LDFLAGS=-Wl,-gc-sections -Wl,-relax
 
 all: $(TARGET).hex
