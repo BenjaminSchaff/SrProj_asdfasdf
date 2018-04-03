@@ -16,6 +16,7 @@
 #include <util/delay.h>
 #include <util/twi.h>
 #include <math.h>
+#include <util/atomic.h>
 
 #include "sensors.h"
 #include "i2c.h"
@@ -323,8 +324,11 @@ void update_sensors()
 
 	/* Calculate average period */
 	avg_wind_freq = 0;
-	for (i = 0; i < NUM_WIND_SAMP; i++)
-		avg_wind_freq += wind_periods[i];
+	for (i = 0; i < NUM_WIND_SAMP; i++) {
+		ATOMIC_BLOCK(ATOMIC_FORCEON) {
+			avg_wind_freq += wind_periods[i];
+		}
+	}
 
 	avg_wind_freq /= NUM_WIND_SAMP; // average period
 
