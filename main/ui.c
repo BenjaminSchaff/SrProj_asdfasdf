@@ -179,13 +179,13 @@ void update_settings_strings(SCREEN *s)
  */
 void update_sensor_strings(SCREEN *sensors, SCREEN *settings, char ret[21])
 {
-	sprintf(sensors->lines[0], get_temp_string(settings, ret));
-	sprintf(sensors->lines[1], get_pressure_string(settings, ret));
-	sprintf(sensors->lines[2], get_wind_string(settings, ret));
-	sprintf(sensors->lines[3], get_humidity_string(ret));
-	sprintf(sensors->lines[4], get_wind_chill_string(ret));
-	sprintf(sensors->lines[5], get_dew_point_string(ret));
-	sprintf(sensors->lines[6], get_humidex_string(ret));
+	sprintf(sensors->lines[0], "%s", get_temp_string(settings, ret));
+	sprintf(sensors->lines[1], "%s", get_pressure_string(settings, ret));
+	sprintf(sensors->lines[2], "%s", get_wind_string(settings, ret));
+	sprintf(sensors->lines[3], "%s", get_humidity_string(ret));
+	sprintf(sensors->lines[4], "%s", get_wind_chill_string(ret));
+	sprintf(sensors->lines[5], "%s", get_dew_point_string(ret));
+	sprintf(sensors->lines[6], "%s", get_humidex_string(ret));
 }
 
 /*!
@@ -314,6 +314,9 @@ void ui_init(SCREEN ui[3])
 	sprintf(main_menu->lines[1], "Saved Data");
 	sprintf(main_menu->lines[2], "Settings");
 	sprintf(main_menu->lines[3],  " ");
+	sprintf(main_menu->lines[4],  " ");
+	sprintf(main_menu->lines[5],  " ");
+	sprintf(main_menu->lines[6],  " ");
 
 	main_menu->length = 4;
 	main_menu->screen_index = 0;
@@ -347,6 +350,9 @@ void ui_init(SCREEN ui[3])
 	sprintf(settings->lines[1], "Press Units: hPa");
 	sprintf(settings->lines[2], "Wind Units: MPH");
 	sprintf(settings->lines[3], "Factory Defaults");
+	sprintf(settings->lines[4], " ");
+	sprintf(settings->lines[5], " ");
+	sprintf(settings->lines[6], " ");
 
 	settings->length = 4;
 	settings->screen_index = 0;
