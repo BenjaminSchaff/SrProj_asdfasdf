@@ -199,7 +199,9 @@ int f16_open_file(char *filename)
 		// check file type
 		switch (entry->filename[0]) {
 		case 0x00:	// empty entry, move on
+			continue;
 		case 0x2E:	// directory (not implimented)
+			continue; // TODO impliment this
 		case 0x5E:	// Deleted file
 			continue;
 		default:	// Must be an actual file, right?
