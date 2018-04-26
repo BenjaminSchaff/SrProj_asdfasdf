@@ -171,13 +171,16 @@ void f16_seek_file(uint32_t position)
 			* f16_state.sect_per_cluster*512) + f16_state.file_cur_pos;
 
 	f16_disk_seek(f16_state.global_cur_pos);
-	
+
+/*
+#ifdef DEBUG 	
 	printf("file position 0x%X\n", position);
 	printf("file start cluster 0x%X\n", f16_state.file_start_cluster);
 	printf("sect per cluster 0x%X\n", f16_state.sect_per_cluster);
 	printf("global position 0x%X\n", f16_state.global_cur_pos);
 	printf("global position 0x%X\n", f16_state.global_cur_pos);
-
+#endif 
+*/
 }
 
 
@@ -220,11 +223,11 @@ int f16_open_file(char *filename)
 			continue;
 		} else if (entry->attri & 0x10) {
 #ifdef DEBUG
-		printf("Dir\t%.11s\n", entry->filename);
+//		printf("Dir\t%.11s\n", entry->filename);
 #endif
 		} else {
 #ifdef DEBUG
-		printf("File\t%.11s\n", entry->filename);
+//		printf("File\t%.11s\n", entry->filename);
 #endif
 		}
 
@@ -249,8 +252,8 @@ int f16_open_file(char *filename)
 		f16_seek_file(0);
 
 #ifdef DEBUG
-		printf("File start cluster:\t%X\n",f16_state.file_start_cluster);
-		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
+//		printf("File start cluster:\t%X\n",f16_state.file_start_cluster);
+//		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
 //		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
 #endif
 		// current filesize limited to one cluster
@@ -339,3 +342,18 @@ int f16_readdir()
 	return 0;
 }
 
+/*!
+ * Tests for end of file
+ *
+ * Returns a non-zero value if the read/write pointer has reached end of the
+ * file; otherwise it returns a zero.
+ */
+int f16_eof()
+{
+	// check end of file
+	if (f16_state.file_cur_pos >= f16_state.file_size) {
+		return 1;
+	} else {
+		return 0;
+	}
+}

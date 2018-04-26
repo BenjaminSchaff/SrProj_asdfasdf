@@ -50,7 +50,6 @@ uint16_t f16_disk_write(uint16_t count)
 
 int main(int argc, char **argv) {
 	char *filename;
-	int ret;
 
 	if (argc > 1) {
 		fin = fopen(argv[1], "rb");
@@ -67,26 +66,37 @@ int main(int argc, char **argv) {
 
 	// init filesysem
 	f16_init(1);
+	printf("\n");
 
-	f16_readdir();	
+	printf("Root ");
+	f16_readdir();
+
+	if (argc < 3) {
+		fclose(fin);
+		return 0;
+	}
+	
 	f16_readdir();
 	printf("\n");
+
+	filename = argv[2];
+
 
 	if(f16_open_file(filename)) {
 		printf("Failed to open file\n");	
 	} else {
 		printf("Successfully opened file: %s\n", filename);
 	}
-
 	
-	if (!f16_read_file(32))
-		printf("Failire to read file\n");
+	while(!f16_eof()) {
+	
+		if (!f16_read_file(sizeof(f16_r_buffer)))
+			printf("Failire to read file\n");
 
-
-	f16_r_buffer[sizeof(f16_r_buffer)-1] = 0;	
-	printf("%s\n",f16_r_buffer);
-
-
+	//	f16_r_buffer[sizeof(f16_r_buffer)-1] = 0;	
+		printf("%.*s", sizeof(f16_r_buffer), f16_r_buffer);
+	}
+	printf("\n");
 	fclose(fin);
 	return 0;
 }

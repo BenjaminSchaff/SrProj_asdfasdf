@@ -93,5 +93,11 @@ uint16_t f16_read_file(uint16_t bytes);
  */
 int f16_readdir();
 
-
+/*!
+ * Tests for end of file
+ *
+ * Returns a non-zero value if the read/write pointer has reached end of the
+ * file; otherwise it returns a zero.
+ */
+int f16_eof();
 #endif
