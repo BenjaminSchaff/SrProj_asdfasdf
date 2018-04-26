@@ -82,37 +82,43 @@ uint8_t f16_w_buffer[512];	// write buffer for fat16
  * Saves requried data from bootsector and partition table.
  * Sets read to start of root directory
  */
-int f16_init()
+int f16_init(int parse_partitions)
 {
 	int i;
 	uint32_t start_sector;
 	struct f16_part_table *ptable = (struct f16_part_table *)((void *)f16_r_buffer);
 	struct f16_boot_sector *bootsect = (struct f16_boot_sector*)((void *)f16_r_buffer);
 
-	f16_seek(0x1BE); // go to partition table start
 
-	// Read partition table entries into buffer on at a time and find first valid one
-	for (i = 0; i < 4; i++) {	
-		f16_read(sizeof(struct f16_part_table)); // read table entry
+	if (parse_partitions == 1) {
+		f16_disk_seek(0x1BE); // go to partition table start
 
-		// check if partition type, break if it's valid
-		if (ptable->part_type == 4 
-			|| ptable->part_type == 6
-			|| ptable->part_type == 14) {
-			break;
+		// Read partition table entries into buffer on at a time and find first valid one
+		for (i = 0; i < 4; i++) {	
+			f16_disk_read(sizeof(struct f16_part_table)); // read table entry
+
+			// check if partition type, break if it's valid
+			if (ptable->part_type == 4 
+				|| ptable->part_type == 6
+				|| ptable->part_type == 14) {
+				break;
+			}
 		}
+		
+		if (i == 4) { // no valid fat16 partition found, return error
+			start_sector = 0; // actually, lets just assume there was no partition table for now.
+			//return -1;
+		} else {
+			// Need to save this before loading bootsector into buffer
+			start_sector = ptable->start_sector; 
+		}
+	} else {
+		start_sector = 0;
 	}
-	
-	if (i == 4) { // no valid fat16 partition found, return error
-		return -1;
-	}
-
-	// Need to save this before loading bootsector into buffer
-	start_sector = ptable->start_sector; 
 
 	// Read boot sector into buffer
-	f16_seek(512 * ptable->start_sector);
-	f16_read(sizeof(struct f16_boot_sector));
+	f16_disk_seek(512 * start_sector);
+	f16_disk_read(sizeof(struct f16_boot_sector));
 	
 
 	// if sector size isn't 512, it won't work with SD card as implimented
@@ -127,6 +133,7 @@ int f16_init()
 	f16_state.data_start = f16_state.root_start
 			+ bootsect->root_dir_entries * sizeof(struct f16_file);
 
+	f16_state.sect_per_cluster = bootsect->sectors_per_cluster;
 	f16_state.file_start_cluster = 0xFFFF;	// no fat lookup on root dir
 	f16_state.file_cur_cluster = 0xFFFF;		// no fat lookup on root dir
 	f16_state.file_size = bootsect->root_dir_entries * sizeof(struct f16_file);
@@ -140,19 +147,14 @@ int f16_init()
 	
 
 	// Go to start of root dir
-	f16_seek(f16_state.root_start);
+	f16_disk_seek(f16_state.root_start);
 
 	return 0;
 }
 
 
 /*!
- * Opens the file of the given name in the directory.
- * Return 0 on success, -1 on file not found
- *
- * Read pointer should be at start of directory.
- * Filename must match the padded 8+3 format on disk,
- * eg log.txt becomes "LOG     TXT"
+ * ?
  */
 void f16_seek_file(uint32_t position)
 {
@@ -164,11 +166,18 @@ void f16_seek_file(uint32_t position)
 	} 	
 	f16_state.file_cur_pos = position;
 
-
+	//TODO, this will break on FAT traversal
 	f16_state.global_cur_pos = f16_state.data_start + ((f16_state.file_start_cluster-2)
 			* f16_state.sect_per_cluster*512) + f16_state.file_cur_pos;
 
-	f16_seek(f16_state.global_cur_pos);
+	f16_disk_seek(f16_state.global_cur_pos);
+	
+	printf("file position 0x%X\n", position);
+	printf("file start cluster 0x%X\n", f16_state.file_start_cluster);
+	printf("sect per cluster 0x%X\n", f16_state.sect_per_cluster);
+	printf("global position 0x%X\n", f16_state.global_cur_pos);
+	printf("global position 0x%X\n", f16_state.global_cur_pos);
+
 }
 
 
@@ -193,25 +202,31 @@ int f16_open_file(char *filename)
 
 	for (i= 0; i < 512; i++) {
 		// read entry
-		f16_read(sizeof(struct f16_file));
+		f16_disk_read(sizeof(struct f16_file));
 
 
 		// check file type
 		switch (entry->filename[0]) {
 		case 0x00:	// empty entry, move on
-			continue;
-		case 0x2E:	// directory (not implimented)
-			continue; // TODO impliment this
-		case 0x5E:	// Deleted file
+		case 0x2E:	// . or ..
+		case 0xE5:	// Deleted file
 			continue;
 		default:	// Must be an actual file, right?
 			break;
 		}
 		
+		if (entry->attri & (0x04) ) {
+			//system file, or reserved, or something don't touch
+			continue;
+		} else if (entry->attri & 0x10) {
 #ifdef DEBUG
-		printf("%.11s\n", entry->filename);
+		printf("Dir\t%.11s\n", entry->filename);
 #endif
-		
+		} else {
+#ifdef DEBUG
+		printf("File\t%.11s\n", entry->filename);
+#endif
+		}
 
 		// compare filename
 		for (j = 0; j < 11; j++) {
@@ -223,15 +238,21 @@ int f16_open_file(char *filename)
 			continue;
 		}
 
-#ifdef DEBUG
-		printf("Successfully opened file %s\n", filename);
-#endif
+//#ifdef DEBUG
+//		printf("Successfully opened file %s\n", filename);
+//#endif
 		
 		//TODO stuff with aactually opening file, setting size, pos, offset, etc
 		f16_state.file_cur_pos = 0;
 		f16_state.file_start_cluster = entry->start_cluster;
 		f16_state.file_size = entry->file_size;
-		
+		f16_seek_file(0);
+
+#ifdef DEBUG
+		printf("File start cluster:\t%X\n",f16_state.file_start_cluster);
+		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
+//		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
+#endif
 		// current filesize limited to one cluster
 		//TODO not do this. 
 		return 0;
@@ -260,12 +281,61 @@ uint16_t f16_read_file(uint16_t bytes)
 */
 
 	// read bytes from disk
-	bytes = f16_read(bytes);
+	bytes = f16_disk_read(bytes);
 
 	// move cursor to byte after ones read
 	f16_seek_file(f16_state.file_cur_pos + bytes);
 
 
 	return bytes;
+}
+
+/*!
+ *  Reads out the contents of the current directory
+ */
+int f16_readdir()
+{
+	struct f16_file *entry = (struct f16_file *)((void *)f16_r_buffer);
+	int i;
+	
+	//TODO, error out if called when not in dir
+	//TODO, make this return an array of strings or something
+#ifdef DEBUG
+	printf("Directory Contents\n");
+#endif
+	for (i= 0; i < 512; i++) {
+		// read entry
+		f16_disk_read(sizeof(struct f16_file));
+
+		// check file type
+		switch (entry->filename[0]) {
+		case 0x00:	// empty entry, move on
+		case 0x2E:	// . or ..
+		case 0xE5:	// Deleted file
+			continue;
+		default:	// Must be an actual file, right?
+			break;
+		}
+		
+		if (entry->attri & (0x04) ) {
+			//system file, or reserved, or something don't touch
+			continue;
+		} else if (entry->attri & 0x10) {
+#ifdef DEBUG
+		printf("Dir\t%.11s\n", entry->filename);
+#endif
+		} else {
+#ifdef DEBUG
+			printf("File\t%.11s\n", entry->filename);
+#endif
+		}
+	}
+	// Navigate read head back to start of dir
+	//TODO, I dont think this works with anything but root dir
+	f16_disk_seek(
+		f16_state.root_start 
+//		+ ((f16_state.file_start_cluster-2) * f16_state.sect_per_cluster*512)
+	);
+	return 0;
 }
 

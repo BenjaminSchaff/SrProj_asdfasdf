@@ -37,7 +37,7 @@ struct {
 /*!
  * Sets read to specific addr on disk
  */
-void f16_seek(uint32_t offset);
+void f16_disk_seek(uint32_t offset);
 
 /*!
  * Reads a block of data from the disk to the read buffer.
@@ -46,7 +46,7 @@ void f16_seek(uint32_t offset);
  * This function provides the disk-level interface for the filesystem and must
  * be implimented by the user.
  */
-uint16_t f16_read(uint16_t count);
+uint16_t f16_disk_read(uint16_t count);
 
 /*!
  * Writes a block of data from the disk from the write buffer.
@@ -55,7 +55,7 @@ uint16_t f16_read(uint16_t count);
  * This function provides the disk-level interface for the filesystem and must
  * be implimented by the user.
  */
-uint16_t f16_write(uint16_t count);
+uint16_t f16_disk_write(uint16_t count);
 
 
 /*!
@@ -63,7 +63,7 @@ uint16_t f16_write(uint16_t count);
  * Saves requried data from bootsector and partition table.
  * Sets read to start of root directory
  */
-int f16_init();
+int f16_init(int parse_partitions);
 
 /*!
  * Sets the read/write cursor to the specified position in the current file.
@@ -86,5 +86,12 @@ int f16_open_file(char *filename);
  * Returns number of bytes read.
  */
 uint16_t f16_read_file(uint16_t bytes);
+
+
+/*!
+ *	Reads out the contents of the current directory
+ */
+int f16_readdir();
+
 
 #endif

@@ -19,7 +19,7 @@ FILE *fin;
 /*
  * Sets read to specific addr on disk
  */
-void f16_seek(uint32_t offset)
+void f16_disk_seek(uint32_t offset)
 {
 	fseek(fin, offset, SEEK_SET); //TODO make this use SD functions
 }
@@ -28,7 +28,7 @@ void f16_seek(uint32_t offset)
 /*
  * Reads a block of data from disk to read/write buffer
  */
-uint16_t f16_read(uint16_t count)
+uint16_t f16_disk_read(uint16_t count)
 {
 	// TODO, limit size to < 32 or buffer size?
 	return (uint16_t)fread(f16_r_buffer, 1, count, fin); //TODO read from SD
@@ -37,47 +37,50 @@ uint16_t f16_read(uint16_t count)
 }
 
 
-uint16_t f16_write(uint16_t count)
+uint16_t f16_disk_write(uint16_t count)
 {
 	// TODO do a read into write buffer, then write contents of buffer to disk
-	
-
-
 	// data move to proper offset in buffer
-
 	// read before bytes
-
 	// read after bytes
-
 	// write block back to SD card
-	
-	
-
 	return 0;
 }
 
 
 int main(int argc, char **argv) {
+	char *filename;
+	int ret;
 
 	if (argc > 1) {
 		fin = fopen(argv[1], "rb");
 	} else {
 		fin = fopen("test.img", "rb");
 	}
-	
-	char filename[12] = "LOG     TXT";
-	
+
+		
+	if (argc != 3) {
+		filename = "LOG     TXT";
+	} else {
+		filename = argv[2];
+	}
+
 	// init filesysem
-	f16_init();
+	f16_init(1);
+
+	f16_readdir();	
+	f16_readdir();
+	printf("\n");
 
 	if(f16_open_file(filename)) {
 		printf("Failed to open file\n");	
 	} else {
-		printf("Successfully openned file: %s", filename);
+		printf("Successfully opened file: %s\n", filename);
 	}
 
-
-	f16_read_file(32);
+	
+	if (!f16_read_file(32))
+		printf("Failire to read file\n");
 
 
 	f16_r_buffer[sizeof(f16_r_buffer)-1] = 0;	
