@@ -32,6 +32,7 @@ struct {
 	uint16_t file_cur_pos;		// Current location in file (byte index)
 	uint32_t file_size;			// Size of file being read, in bytes
 	uint32_t global_cur_pos;	// Current location on disk
+	uint32_t cluster_left;		// Bytes remaining in current cluster
 } f16_state;
 
 /*!

@@ -136,6 +136,7 @@ int f16_init(int parse_partitions)
 	f16_state.sect_per_cluster = bootsect->sectors_per_cluster;
 	f16_state.file_start_cluster = 0xFFFF;	// no fat lookup on root dir
 	f16_state.file_cur_cluster = 0xFFFF;		// no fat lookup on root dir
+	f16_state.cluster_left = 0xFFFFFFFF;
 	f16_state.file_size = bootsect->root_dir_entries * sizeof(struct f16_file);
 	f16_state.file_cur_pos = 0;
 	
@@ -158,6 +159,8 @@ int f16_init(int parse_partitions)
  */
 void f16_seek_file(uint32_t position)
 {
+	int clusters_into_file, i;
+	
 	//TODO traverses FAT for current file to specified position
 
 	// Don't allow movement past end of file
@@ -166,9 +169,29 @@ void f16_seek_file(uint32_t position)
 	} 	
 	f16_state.file_cur_pos = position;
 
+
+	clusters_into_file = f16_state.file_cur_pos / (f16_state.sect_per_cluster * 512);
+	for(i = 0; i < clusters_into_file; i++) {
+		// go to FAT
+		f16_disk_seek(f16_state.fat_start + f16_state.file_cur_cluster*2); // current entry
+		f16_disk_read(2);	// read current to get num of next
+		
+		f16_state.file_cur_cluster = f16_r_buffer[0] | f16_r_buffer[1]<<1;
+
+		if (f16_state.file_cur_cluster == 0xFFFF) { // end of chain
+			f16_state.file_cur_pos = f16_state.file_size;
+			return;
+		}
+	}
+/*
 	//TODO, this will break on FAT traversal
 	f16_state.global_cur_pos = f16_state.data_start + ((f16_state.file_start_cluster-2)
 			* f16_state.sect_per_cluster*512) + f16_state.file_cur_pos;
+*/
+	f16_state.global_cur_pos = f16_state.data_start + ((f16_state.file_cur_cluster-2)
+			* f16_state.sect_per_cluster*512) 
+			+ (f16_state.file_cur_pos % (f16_state.sect_per_cluster * 512));
+
 
 	f16_disk_seek(f16_state.global_cur_pos);
 
@@ -248,7 +271,11 @@ int f16_open_file(char *filename)
 		//TODO stuff with aactually opening file, setting size, pos, offset, etc
 		f16_state.file_cur_pos = 0;
 		f16_state.file_start_cluster = entry->start_cluster;
-		f16_state.file_size = entry->file_size;
+		f16_state.file_cur_cluster = entry->start_cluster;
+		f16_state.cluster_left = f16_state.sect_per_cluster * 512;
+		
+		f16_state.file_size = entry->file_size; //TODO, someything different here for subdir
+
 		f16_seek_file(0);
 
 #ifdef DEBUG
@@ -278,13 +305,20 @@ uint16_t f16_read_file(uint16_t bytes)
 	}
 	
 	//TODO support files larger than one cluster (64kB) by actually using FAT
-/*
-	// check end of cluster
-	if (f16_state.file_cur_pos %
-*/
+	if (f16_state.cluster_left == 0) {
+		f16_seek_file(f16_state.file_cur_pos);		
+	}
+
+	// check end of file/cluster
+	if (bytes > (f16_state.file_size - f16_state.file_cur_pos))
+		bytes = f16_state.file_size - f16_state.file_cur_pos;
+	if (bytes > f16_state.cluster_left)
+		bytes = f16_state.cluster_left;
 
 	// read bytes from disk
 	bytes = f16_disk_read(bytes);
+
+	f16_state.cluster_left -= bytes;
 
 	// move cursor to byte after ones read
 	f16_seek_file(f16_state.file_cur_pos + bytes);

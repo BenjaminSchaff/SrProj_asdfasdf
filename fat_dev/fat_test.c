@@ -30,10 +30,10 @@ void f16_disk_seek(uint32_t offset)
  */
 uint16_t f16_disk_read(uint16_t count)
 {
-	// TODO, limit size to < 32 or buffer size?
-	return (uint16_t)fread(f16_r_buffer, 1, count, fin); //TODO read from SD
-	
-	// for SD card, will require reading from two sectors, unless limited to only aligned reads.
+	if (count > sizeof(f16_r_buffer))
+		count = sizeof(f16_r_buffer);
+
+	return (uint16_t)fread(f16_r_buffer, 1, count, fin);
 }
 
 
@@ -50,6 +50,7 @@ uint16_t f16_disk_write(uint16_t count)
 
 int main(int argc, char **argv) {
 	char *filename;
+	int ret;
 
 	if (argc > 1) {
 		fin = fopen(argv[1], "rb");
@@ -90,11 +91,13 @@ int main(int argc, char **argv) {
 	
 	while(!f16_eof()) {
 	
-		if (!f16_read_file(sizeof(f16_r_buffer)))
+
+		ret = f16_read_file(sizeof(f16_r_buffer));
+		if (!ret) 
 			printf("Failire to read file\n");
 
 	//	f16_r_buffer[sizeof(f16_r_buffer)-1] = 0;	
-		printf("%.*s", sizeof(f16_r_buffer), f16_r_buffer);
+		printf("%.*s", ret, f16_r_buffer);
 	}
 	printf("\n");
 	fclose(fin);
