@@ -224,7 +224,7 @@ int f16_open_file(char *filename)
 	// if filename[0] == '/'
 	//	set stuff back to original
 
-	//TODO, add support for subdirs
+	//TODO, make subdirs actually work
 
 	for (i= 0; i < 512; i++) {
 		// read entry
@@ -264,11 +264,8 @@ int f16_open_file(char *filename)
 			continue;
 		}
 
-//#ifdef DEBUG
-//		printf("Successfully opened file %s\n", filename);
-//#endif
 		
-		//TODO stuff with aactually opening file, setting size, pos, offset, etc
+		// stuff todo with aactually opening file, setting size, pos, offset, etc
 		f16_state.file_cur_pos = 0;
 		f16_state.file_start_cluster = entry->start_cluster;
 		f16_state.file_cur_cluster = entry->start_cluster;
@@ -283,8 +280,6 @@ int f16_open_file(char *filename)
 //		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
 //		printf("Read pos:\t%X\n",f16_state.global_cur_pos);
 #endif
-		// current filesize limited to one cluster
-		//TODO not do this. 
 		return 0;
 	}
 
@@ -304,7 +299,7 @@ uint16_t f16_read_file(uint16_t bytes)
 		return 0;
 	}
 	
-	//TODO support files larger than one cluster (64kB) by actually using FAT
+	// check if at the end of the cluster
 	if (f16_state.cluster_left == 0) {
 		f16_seek_file(f16_state.file_cur_pos);		
 	}
